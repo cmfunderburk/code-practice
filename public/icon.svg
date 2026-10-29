@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- Source for the home-screen icons; scripts/make-icons.sh renders the PNGs. -->
+  <!-- Indented code lines: the top ones revealed, the rest still placeholder bars. -->
+  <rect width="1024" height="1024" fill="#fbfaf7"/>
+  <g fill="#1d1d1b">
+    <rect x="176" y="232" width="420" height="44" rx="22"/>
+    <rect x="276" y="342" width="520" height="44" rx="22"/>
+  </g>
+  <rect x="276" y="452" width="420" height="44" rx="22" fill="#2a64c5"/>
+  <g fill="#1d1d1b" fill-opacity="0.16">
+    <rect x="376" y="562" width="470" height="44" rx="22"/>
+    <rect x="376" y="672" width="330" height="44" rx="22"/>
+    <rect x="276" y="782" width="380" height="44" rx="22"/>
+  </g>
+</svg>

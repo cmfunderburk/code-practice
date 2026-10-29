@@ -1,0 +1,14 @@
+[project]
+name = "code-practice"
+version = "0.1.0"
+description = "Bundle builder for the Code Practice app"
+license = "MIT"
+requires-python = ">=3.12"
+dependencies = []
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+pythonpath = ["scripts"]
+testpaths = ["tests"]

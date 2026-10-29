@@ -1,0 +1,22 @@
+title = "Game of Life"
+
+[[section]]
+symbols = ["imports"]
+cue = "What the program needs: stdin, and a counting dictionary."
+
+[[section]]
+symbols = ["step"]
+cue = "Core: one generation on the set of live cells. One pass counts the eight neighbours of every live cell; keep a cell with 3, or 2 if it is already alive, clipped to the bounded grid. Returns a new set."
+
+[[section]]
+symbols = ["parse_input"]
+cue = "SPEC §2 validation, read the Python way: splitlines, then map int over the split header into rows, cols, generations (any ValueError becomes one naming the header); check their ranges, then exactly rows grid lines of cols '#' or '.' characters. Returns rows, cols, generations, and the grid."
+
+[[section]]
+symbols = ["_render"]
+cue = "View: the board as rows of # and . joined by newlines."
+
+[[section]]
+name = "main"
+symbols = ["main", "__main__"]
+cue = "Composition root: parse all of stdin with sys.stdin.read() (print error: and stop if bad), build the live set from the grid, then print gen g and the rendered board for generations 0 through n, stepping before every frame but the first. Then the module guard."

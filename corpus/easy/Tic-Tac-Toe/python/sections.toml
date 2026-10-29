@@ -1,0 +1,35 @@
+title = "Tic-Tac-Toe"
+
+[[section]]
+name = "board"
+symbols = ["EMPTY_BOARD", "_LINES"]
+cue = "The empty board as nine empty strings, and the eight winning lines as index triples: rows, then columns, then the two diagonals."
+
+[[section]]
+symbols = ["to_move"]
+cue = "Derived view: X when the two marks are equal in number, otherwise O."
+
+[[section]]
+symbols = ["winner"]
+cue = "Derived view: the mark filling any winning line, or None."
+
+[[section]]
+symbols = ["is_draw"]
+cue = "Derived view: no winner and no empty cell."
+
+[[section]]
+symbols = ["legal_moves"]
+cue = "Derived view: no moves once someone has won; otherwise the indices of the empty cells."
+
+[[section]]
+symbols = ["play"]
+cue = "Transition: a position not among the legal moves is a ValueError (illegal move: pos); otherwise a new board with the mover's mark there."
+
+[[section]]
+symbols = ["_render"]
+cue = "View: three rows of cells joined by spaces, . for empty, rows joined by newlines."
+
+[[section]]
+name = "main"
+symbols = ["main", "__main__"]
+cue = "Composition root: from the empty board, while no winner and no draw: print the board and who is to move, read a line with input(); end of input prints game abandoned and returns; a line int() can't read asks for a cell; print the core's ValueError (a marked or off-board cell), else thread the new board. Finally the board and X wins! / O wins! or draw. Then the module guard."

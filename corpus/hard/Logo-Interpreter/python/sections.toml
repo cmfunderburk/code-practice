@@ -1,0 +1,55 @@
+title = "Logo Interpreter"
+
+[[section]]
+symbols = ["imports"]
+cue = "What the program needs: postponed annotations (a command refers to its own type) and a decorator for an immutable record."
+
+[[section]]
+name = "headings"
+symbols = ["VECTORS", "HEADINGS"]
+cue = "The four unit steps and their compass letters, both in counter-clockwise order from east, so a heading is an index 0-3 and a left turn adds one."
+
+[[section]]
+symbols = ["Drawing"]
+cue = "Core state as one immutable value: position, heading index, pen flag, and the tuple of segments drawn. Every field defaults to the start: origin, east, pen down, nothing drawn."
+
+[[section]]
+symbols = ["Command"]
+cue = "Command object: an op name and its argument (a distance, a (count, body) pair for repeat, or nothing). Applying it to a drawing returns a new drawing: forward moves and appends a segment only while the pen is down, left/right turn by one index mod 4, penup/pendown set the flag, repeat applies the body count times; any other op is a ValueError. Its inverse, given the drawing before, is a restore of that drawing."
+
+[[section]]
+symbols = ["Restore"]
+cue = "The inverse command: holds a drawing, and applying it ignores the current drawing and returns the held one."
+
+[[section]]
+symbols = ["_positive"]
+cue = "Parser helper: a count or distance token as an int. ValueError showing the token if it is not an integer, and a separate ValueError if it is below 1."
+
+[[section]]
+symbols = ["_parse"]
+cue = "Recursive-descent parser over uppercase tokens from a position, flagged as nested or not. ] closes a nested block (unexpected at top level); FORWARD needs a distance; the four bare words become lowercase ops; REPEAT needs a count then [ and recurses for its body; anything else is an unknown command. Running out inside a block is missing ]. Returns the commands and the new position."
+
+[[section]]
+symbols = ["parse"]
+cue = "Entry: pad brackets with spaces, uppercase, split on whitespace, and parse from position 0 at top level."
+
+[[section]]
+symbols = ["render"]
+cue = "The parser's inverse: canonical uppercase source with single spaces. FORWARD n, REPEAT n [ body ] with the body rendered recursively, and other ops as their uppercase names."
+
+[[section]]
+symbols = ["Logo"]
+cue = "Engine: holds the current drawing and an undo stack. Read-only properties expose position, heading as its letter, pen flag, and segments. Executing parses all the source first (so bad source changes nothing), then applies each top-level command, pushing its inverse against the drawing before. Undo pops and applies one inverse; ValueError when there is nothing to undo."
+
+[[section]]
+symbols = ["_is_undo"]
+cue = "Shell helper: a line is an undo when its only word is UNDO, in any case."
+
+[[section]]
+symbols = ["_report"]
+cue = "Shell helper: the state line x=X y=Y heading=H pen=down|up segments=N, then the drawing, one line x1,y1 -> x2,y2 per segment, oldest first, joined by newlines."
+
+[[section]]
+name = "main"
+symbols = ["main", "__main__"]
+cue = "Composition root: one interpreter; read lines with input() until end of input, undo or execute each, printing error: for a ValueError and the report otherwise. Then the module guard."

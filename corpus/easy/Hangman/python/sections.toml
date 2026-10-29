@@ -1,0 +1,38 @@
+title = "Hangman"
+
+[[section]]
+symbols = ["imports"]
+cue = "What the program needs: a random source to pick the word, the lowercase alphabet, and a decorator for an immutable record."
+
+[[section]]
+symbols = ["WORDS"]
+cue = "The built-in word list the shell picks from: eight lowercase words, each with at least two different letters."
+
+[[section]]
+symbols = ["HangmanState"]
+cue = "Core state as one immutable value: the secret, the set of letters guessed so far, and the miss budget."
+
+[[section]]
+symbols = ["new_game"]
+cue = "Constructor: a fresh game for a secret with nothing guessed; the budget defaults to 6."
+
+[[section]]
+symbols = ["wrong_count"]
+cue = "Derived view: how many guessed letters are not in the secret."
+
+[[section]]
+symbols = ["masked"]
+cue = "Derived view: the secret with every unguessed letter shown as _."
+
+[[section]]
+symbols = ["status"]
+cue = "Derived view: won once every secret letter is guessed, lost once misses reach the budget, otherwise playing. Won is checked first."
+
+[[section]]
+symbols = ["guess"]
+cue = "Transition: reject a guess after the game is over, or a letter already guessed (ValueError naming the status or the letter); otherwise a new state with the letter added."
+
+[[section]]
+name = "main"
+symbols = ["main", "__main__"]
+cue = "Composition root: one state for random.choice(WORDS). While playing: print the mask and wrong: n/max, read a line with input(), stripped and lowercased; end of input prints you quit! with the word and returns; a line that is not one letter a-z asks for one; print the core's ValueError, else thread the new state. Finally you won!/lost! and the word. Then the module guard."

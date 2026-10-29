@@ -1,0 +1,59 @@
+title = "Adventure Rooms"
+
+[[section]]
+symbols = ["imports"]
+cue = "What the program needs: a callable type for the verb table."
+
+[[section]]
+name = "world"
+symbols = ["DIRECTIONS", "DESCRIPTIONS", "EXITS", "START_ITEMS"]
+cue = "The fixed world: the four directions in north, south, east, west order; each room's description (a dusty entrance hall, a book-lined library, a damp stone cellar, a cramped attic, an overgrown garden); each room's exits (hall north→library, west→garden; library south→hall, north→attic, west→cellar; cellar east→library; attic south→library; garden east→hall); and each room's starting items (hall lamp, library book, cellar key, attic none, garden rose and spade)."
+
+[[section]]
+symbols = ["State"]
+cue = "The state type: a plain dict alias, mutated in place by the commands."
+
+[[section]]
+symbols = ["new_game"]
+cue = "Constructor: start in the hall with an empty inventory, a fresh copy of every room's item list, and not over."
+
+[[section]]
+symbols = ["_look"]
+cue = "Derived view: You are in <description>. then Exits: listing the room's exits in direction order, comma-separated, ending with a period; then You see: and the room's items the same way, only when there are any. Lines joined by newlines."
+
+[[section]]
+symbols = ["_do_look"]
+cue = "Command look: the state unchanged and the room's look text."
+
+[[section]]
+symbols = ["_do_go"]
+cue = "Command go: Go where? with no argument, You can't go that way. for a direction with no exit; otherwise move and return the new room's look text."
+
+[[section]]
+symbols = ["_do_take"]
+cue = "Command take: Take what? with no argument, There is no <item> here. if the room lacks it; otherwise move it from the room to the end of the inventory. Output Taken."
+
+[[section]]
+symbols = ["_do_drop"]
+cue = "Command drop: Drop what? with no argument, You are not carrying <item>. if it is not in the inventory; otherwise move it from the inventory to the end of the room's items. Output Dropped."
+
+[[section]]
+symbols = ["_do_inventory"]
+cue = "Command inventory: You are carrying nothing. when empty, else You are carrying: and the items comma-separated, ending with a period."
+
+[[section]]
+symbols = ["_do_quit"]
+cue = "Command quit: mark the game over. Output Goodbye."
+
+[[section]]
+symbols = ["VERBS"]
+cue = "Dispatch table: each verb to its handler, typed as a callable from (state, arg) to (state, output)."
+
+[[section]]
+symbols = ["execute"]
+cue = "Engine: any command after quit is a ValueError (the game is over); split the stripped line into verb and argument, reject an unknown verb (ValueError naming it), dispatch with the argument stripped."
+
+[[section]]
+name = "main"
+symbols = ["main", "__main__"]
+cue = "Composition root: a new game, print the opening look, then until the game is over read a line with input() (stop silently at EOFError), execute it, and print the output, or the ValueError's message bare. Then the module guard."

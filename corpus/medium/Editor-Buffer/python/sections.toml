@@ -1,0 +1,34 @@
+title = "Editor Buffer"
+
+[[section]]
+symbols = ["imports"]
+cue = "What the program needs: a decorator for an immutable record."
+
+[[section]]
+symbols = ["HELP"]
+cue = "The usage line printed for any unparseable command: i <pos> <text> | d <pos> <n> | u | r | p | q."
+
+[[section]]
+symbols = ["Insert"]
+cue = "Command object, immutable: a position and the text inserted there. Applying splices the text in at the position; its inverse is the Delete of the same position and text."
+
+[[section]]
+symbols = ["Delete"]
+cue = "Command object, immutable: a position and the text removed from there. Applying cuts that many characters out at the position; its inverse is the Insert of the same position and text."
+
+[[section]]
+symbols = ["EditorBuffer"]
+cue = "Core state: the text (empty by default, read through a property) and undo and redo stacks of command objects. insert allows any position 0..len (ValueError insert out of range: pos); delete needs n >= 1 inside the text (ValueError delete out of range: pos+n) and records the removed text. One private helper applies a command, pushes it on undo, and clears redo. undo applies the popped command's inverse and pushes it on redo; redo reapplies and pushes on undo; each refuses an empty stack (nothing to undo / nothing to redo)."
+
+[[section]]
+symbols = ["_number"]
+cue = "Shell helper: a position or count as an int if the text is ASCII digits, else None."
+
+[[section]]
+symbols = ["_command"]
+cue = "Shell helper: parse a line into a verb and its argument tuple, or None. u, r, p, q only as the whole line; i needs a number, a space, and the rest of the line as its text; d needs exactly two space-separated numbers."
+
+[[section]]
+name = "main"
+symbols = ["main", "__main__"]
+cue = "Composition root: read lines with input() until EOFError; an unparseable line prints the help; q stops; i, d, u, r call the buffer; p prints the text in double quotes. A ValueError prints its message bare. Then the module guard."

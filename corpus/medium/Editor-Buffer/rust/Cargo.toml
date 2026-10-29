@@ -1,0 +1,11 @@
+[package]
+name = "editor-buffer"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[[bin]]
+name = "editor-buffer"
+path = "solution.rs"
+
+[dependencies]

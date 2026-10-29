@@ -12,15 +12,19 @@ corpus/<tier>/<Program>/          tier: easy, medium or hard
   meta.json                       {"tags": ["game-logic"], "pattern": "functional-core"}
   SPEC.md                         the program's contract, shared by every language
   DEFENSE.md                      oral-defense questions with folded answers
+  test_program.py                 smoke suite: SPEC's fixed output, run in every language
   python/
     solution.py                   the reference implementation, drilled as is
     sections.toml                 drill units: grouping and cues
     problem.md                    the Python implementation's API and approach
     notes.md                      why it is shaped this way, what was rejected
+    test_solution.py              core tests
   rust/  and  c/
     solution.rs / solution.c      the port, drilled as is
     annotated_solution.*          the port plus comment lines, shown in the read view
     problem.md  notes.md          the port's own contract and notes
+    test_solution.rs / .c         core tests
+    Cargo.toml  Cargo.lock        (Rust) so `cargo run` works in the directory
 ```
 
 - **The program's name** is its directory name, with hyphens shown as spaces (`Game-of-Life` is
@@ -113,5 +117,28 @@ Links show only their text, because the app has nothing to open.
   it differs from the Python version. **Its `notes.md`** gives the language-specific moves.
   **`annotated_solution.*`** must be `solution.*` with comment lines added and nothing else
   changed. The build fails if any line of `solution.*` is missing from it.
+
+## Tests
+
+```bash
+uv run pytest corpus                        # every program, every language
+uv run pytest corpus/easy/Hangman           # one program
+uv run pytest corpus -k "python"            # the smoke suite in one language, plus Python's tests
+```
+
+Rust needs `cargo`, and C needs a `cc` that supports `-std=c23` (a recent GCC or Clang). A
+missing toolchain skips its language. Builds go to `.build/` at the repo root. `bun run verify`
+runs these tests along with the app's.
+
+- **Core tests** check one implementation's API directly. The Python tests (`python/test_solution.py`)
+  get the module as the `sub` fixture, freshly imported for each test. `rust/test_solution.rs`
+  is compiled as a child module of the solution (`use super::*;`), so it reaches private
+  items. `c/test_solution.c` includes `solution.c`, renaming its `main`, and is built with
+  UBSan.
+- **The smoke suite** (`test_program.py`) runs the whole program on stdin through the
+  `run_program` fixture, once per language. It checks only what SPEC's fixed-output section
+  fixes, because all other wording is each implementation's own.
+
+The fixtures and the build steps live in `corpus/conftest.py`.
 
 `.claude/skills/add-program/` walks an agent through writing a new program in this format.

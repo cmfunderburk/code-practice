@@ -104,11 +104,31 @@ It needs everything above. Copy the structure of an existing `DEFENSE.md`:
 
 Every claim must be true of the code as written. Check each one against the source.
 
-## 6. Check
+## 6. Write the tests
+
+Write the tests alongside the code. They are how you check that the program meets `SPEC.md`,
+and that each port meets its contract. The tests section of `corpus/README.md` explains how
+they run. Copy the shape of an existing program's tests.
+
+- **`test_program.py`**, the smoke suite, checks only the fixed-output facts in `SPEC.md`,
+  through the `run_program` fixture, so it runs unchanged against all three languages. Where
+  expected output is computed, compute it with a small, independent oracle in the test file
+  (a plain replay of SPEC's rules), never by calling an implementation.
+- **`python/test_solution.py`** tests the API from `python/problem.md` through the `sub`
+  fixture: the rules, every refusal, and `main()` with `sys.stdin` and `random` monkeypatched.
+- **`rust/test_solution.rs`** starts with `use super::*;`, and
+  **`c/test_solution.c`** wraps `#include "solution.c"` in `#define main <program>_main` and
+  `#undef main`. Each tests its port's core API with plain `assert`s.
+- **Rust ports** need `rust/Cargo.toml` with `[[bin]] path = "solution.rs"`, plus a
+  `Cargo.lock` (`cargo generate-lockfile`).
+
+Run `uv run pytest corpus/<tier>/<Program>` until it passes in every language.
+
+## 7. Check
 
 ```bash
 bun run bundle     # fails loudly on a sections.toml mismatch or a bad annotated file
-bun run verify     # typecheck, app tests, and the corpus tests (round trip, steps, cues)
+bun run verify     # typecheck, app tests, bundle tests, and every program's tests
 ```
 
 Then run `bun run dev`, open the program in the app, and check three things:
@@ -117,6 +137,3 @@ Then run `bun run dev`, open the program in the app, and check three things:
 - every document tab;
 - a whole-program drill in each language, to confirm the cues read well and the step boundaries
   feel right.
-
-Don't add test files to the corpus. The repo ships none for its programs, and the documents must
-not refer to tests.

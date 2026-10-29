@@ -66,15 +66,19 @@ Minesweeper program to the corpus") and it will follow the skill.
 
 ## Running it
 
-Requires [Bun](https://bun.com) and [uv](https://docs.astral.sh/uv/).
+Requires [Bun](https://bun.com) and [uv](https://docs.astral.sh/uv/). The programs' Rust and C
+tests also need `cargo` and a C23 compiler. They are skipped without them.
 
 ```bash
 bun install --frozen-lockfile
 uv sync
 bun run dev       # dev server with hot reload on 127.0.0.1:5419
 bun run start     # production build, with the service worker for offline use
-bun run verify    # typecheck + app tests + corpus tests
+bun run verify    # typecheck + app tests + bundle tests + every program's tests
 ```
+
+Each program ships with tests in all three languages, so you can also write an implementation
+of your own against the spec and check it. See [`corpus/README.md`](corpus/README.md#tests).
 
 At startup the server builds the content bundle from `corpus/` (`scripts/build_bundle.py` →
 `src/generated/bundle.json`), so restart it to pick up corpus changes. An open app then offers

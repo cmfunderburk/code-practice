@@ -1,0 +1,11 @@
+[package]
+name = "game-of-life"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[[bin]]
+name = "game-of-life"
+path = "solution.rs"
+
+[dependencies]

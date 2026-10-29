@@ -4,3 +4,5 @@ __pycache__/
 node_modules/
 src/generated/
 .claude/settings.local.json
+.build/
+target/

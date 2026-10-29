@@ -1,0 +1,11 @@
+[package]
+name = "adventure-rooms"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[[bin]]
+name = "adventure-rooms"
+path = "solution.rs"
+
+[dependencies]

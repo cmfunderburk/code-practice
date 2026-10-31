@@ -1,9 +1,10 @@
 # Code Practice
 
-A tablet-first app for studying **whole programs**. You read a program through, then drill it
-one unit at a time. You see a unit's cue and its shape as placeholder bars, write the code out
-in your head, and reveal it line by line with a tap to check yourself. Tap a line you got wrong
-to flag it, then redo the flagged units until each run is clean.
+A tablet-first app for studying **small, whole programs**. Built as a small aid toward moving beyond 
+"tutorial hell," or as a lightweight entry into C or Rust coming from Python. You read a program 
+through, then drill it one unit at a time. You see a unit's cue and its shape as placeholder bars, 
+write the code out in your head, and reveal it line by line with a tap to check yourself. Tap a line 
+you got wrong to flag it, then redo the flagged units until each run is clean.
 
 Every program comes in **Python, Rust and C**. Python is the entry point, and the Rust and C
 ports are the same design written naturally in each language. Use them as comparison cases, or

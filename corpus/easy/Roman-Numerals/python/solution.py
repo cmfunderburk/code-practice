@@ -30,7 +30,7 @@ def from_roman(s: str) -> int:
 
 
 def _canonical(numeral: str) -> bool:
-    """The round-trip law as a validator: render the parse, compare."""
+    """True when converting the numeral to a number and back gives the same numeral."""
     try:
         return to_roman(from_roman(numeral)) == numeral
     except ValueError:

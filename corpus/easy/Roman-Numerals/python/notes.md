@@ -1,72 +1,77 @@
-## Table Render — worked example
+## How it works
 
-**Intuition.** The program's real lesson is the BOUNDARY: numerals are
-text, ints are the representation you compute on, and `to_roman` /
-`from_roman` are the renderer and parser facing each other across it. The
-render side is one descending value→symbol table with the subtractive pairs
-as first-class rows, then a greedy walk — `divmod` off each value, append
-`symbol * count`. The table IS the algorithm; get its 13 rows right and the
-code is three lines.
+The program converts in both directions between numbers, which it computes with,
+and numerals, which the user reads and types. `to_roman` is the *renderer*, from
+number to text, and `from_roman` is the *parser*, from text to number.
 
-Worked check: 1990 → M (990 left) → CM (90) → XC (0) → `"MCMXC"`.
+`to_roman` uses one table of value and symbol pairs in descending order, in which
+the subtractive pairs (`CM`, `CD`, `XC`, `XL`, `IX`, `IV`) are rows of their own
+beside the single letters. It walks the table from the top. For each row, `divmod`
+gives how many times the value fits into what is left, and `to_roman` appends the
+symbol that many times. Everything `to_roman` knows about Roman numerals is in the
+table's 13 rows; the loop is three lines.
 
-**Complexity.**
-- Time: $O(1)$ — 13 table rows, at most 15 output symbols; Space: $O(1)$.
+Worked check: 1990 → `M` (990 left) → `CM` (90 left) → `XC` (0 left) →
+`"MCMXC"`.
 
-**Discussed, not drilled.** `from_roman` assumes canonical input — real
-validation (rejecting `"IIII"` or `"IXIX"`) is a parsing drill for another
-day; the cheap version is the round-trip check `to_roman(from_roman(s)) == s`,
-which the shell applies to every numeral line. SPEC §1 states a genuinely
-different formulation: per-decimal-digit positional tables.
+**Complexity.** Time $O(1)$: 13 table rows and at most 15 output symbols. Space
+$O(1)$.
 
-**The shell.** `main()` is a line-by-line two-way dispatcher read with
-`input()`. It trims the line and folds it to uppercase, since a person at a
-terminal who types ` mcmxc ` means `MCMXC`. ASCII digits render through
-`to_roman`, whose `out of range` error it prints. Numeral letters parse
-through `from_roman`, but only after `_canonical` renders the parse back and
-compares it with the line. Every refusal is one `error: <message>` line. Each
-direction is the other's oracle — run the program and feed it its own output.
+**Checking `to_roman`.** Because the program converts both ways, you can check
+`to_roman` by hand: run the program, type a number, then type the numeral it
+prints, and `from_roman` should give the number back. The tests check
+every number from 1 to 3999 in both directions against a different method, one
+lookup table per decimal place, which is how SPEC §1 writes numerals.
 
-## Shapes chosen and rejected
+## `main`
 
-- **One descending table with the subtractive pairs as rows (chosen)** over
-  a **greedy parse** as the half that defines canonical form. Both are halves
-  of one boundary. Rendering puts all thirteen rules in data, so the code is a
-  three-line walk; parsing puts the subtractive rule in one symbol of lookahead
-  and can't tell canonical input from junk.
-- **The round-trip law as the validator.** `from_roman` alone accepts any
-  string of numeral letters: `IIII` is 4, `IM` is 999, `MMMM` is 4000. A
-  canonical-form regex would be a second statement of the grammar, kept in
-  sync with the table by hand. Rendering the parse back and comparing reuses
-  the table, so one definition of "canonical" serves both directions. The
-  check catches `to_roman`'s `ValueError` too, because a run of fifteen `M`s
-  parses to 15000, which has no numeral.
-- **Python's own reading of a line.** The shell strips the line and
-  upper-cases it. A shell that did only that and trusted `str.isdigit` would
-  print 0 for an empty line, 4000 for `MMMM`, `XLII` for `٤٢` (Arabic-Indic
-  digits), and crash with a traceback on `0` or `hello`. The bugs there are the
-  missing canonical check, the empty line, and the uncaught errors, not the
-  trimming.
-  A strict reader, nothing stripped or folded, one to four digits, one to
-  fifteen letters, read as bytes, would let one exact transcript match Python,
-  C, and Rust alike, at the cost of each language's own reading. So the shell
-  trims and folds, keeps `isascii()` beside `isdigit()` so only ASCII digits
-  are a number, and checks every numeral by the round trip. Numbers have
-  no length cap: Python's `int` takes any size, and anything past 3999 is out
-  of range (past 4,300 digits `int` itself refuses, with a `ValueError` the
-  shell reports the same way).
-- **Refusals say `error`.** Every refused line prints `error: <message>`, the
-  convention all three implementations share, and the only fact about a
-  refusal SPEC §4 fixes. The numerals themselves are the program's data and
-  the same in every implementation.
+`main()` reads one line at a time with `input()`. It removes surrounding spaces and
+converts the line to uppercase, since a person who types ` mcmxc ` at a terminal
+means `MCMXC`. A line of ASCII digits goes to `to_roman`, and if `to_roman` raises
+`out of range`, `main` prints that error. A line of numeral letters goes to
+`from_roman`, but `main` prints the value only after `_canonical` confirms that the
+numeral is valid. Every refusal is one line, `error: <message>`.
 
-## Scales up to
+## Design choices
 
-A Lisp interpreter is built on **parser / renderer separation (reader and
-printer)**. Its reader turns text into data and its printer turns data back
-into text, as `from_roman` and `to_roman` do here, at the size of a language:
-integers, booleans, strings, symbols, and nested lists. A key-value store's
-persistence makes the round trip load-bearing. When its append-only log is
-stored in the wire protocol (RESP, say), the log format is the wire format,
-and replay at startup parses what the renderer wrote. A renderer and parser
-that disagree there lose data, not just a validation check.
+- **A table, not a rule.** The six subtractive pairs could be handled by a rule
+  instead of rows, as `from_roman` does: it subtracts a symbol's value whenever the
+  next symbol is larger. The rule is shorter to state, but it never says which
+  pairs are allowed, so `from_roman` reads `IM` as 999. The table lists exactly the
+  allowed pairs, so `to_roman` can't write an invalid numeral.
+- **Checking a numeral with the round trip.** `from_roman` accepts any string of
+  numeral letters: `IIII` is 4, `IM` is 999, `MMMM` is 4000. `_canonical` checks a
+  numeral by converting it to a number and back, and comparing the result with the
+  original. Because `to_roman` writes only valid numerals, this check uses the
+  table's definition of a valid numeral. A regular expression for valid numerals
+  would be a second definition, which someone would have to keep in step with the
+  table by hand. A run of fifteen `M`s parses to 15000, which has no numeral, so
+  `_canonical` also catches `to_roman`'s `ValueError` and returns `False`.
+- **Checking every line before trusting it.** Removing spaces and changing case
+  are conveniences; the checks after them are what keep the program correct. An
+  empty line is refused, since `from_roman("")` would return 0. A number must be
+  ASCII digits (`isascii()` beside `isdigit()`), because `str.isdigit` is also true
+  for digits in other scripts, such as Arabic-Indic `٤٢`, and `int` reads those as
+  42. A line containing a letter outside `VALUES` is refused before `from_roman`
+  can raise `KeyError`, and `to_roman`'s `ValueError` is caught and printed, so no
+  input ends the program with a traceback. A number may be any length: Python's
+  `int` takes any size, and anything past 3999 is out of range.
+- **Every refusal contains `error`.** The shared tests read only that word from a
+  refusal, so the C and Rust versions can word their messages their own way. The
+  numerals must be the same in every version.
+
+## Where this shows up again
+
+Any program that both writes and reads the same text format has a renderer and a
+parser that must agree. Two larger examples:
+
+- A Lisp interpreter has a *reader*, which turns source text into integers,
+  booleans, strings, symbols, and nested lists, and a *printer*, which turns those
+  values back into text, as `from_roman` and `to_roman` do here. A careful printer
+  writes strings with the same backslash escapes its reader understands, so
+  printed data reads back as the same data.
+- A key-value store can write every change to a log file in the same format it
+  uses on the network, and rebuild its data at startup by parsing that log (Redis
+  does this with its RESP protocol). A renderer and parser that disagreed there
+  would lose stored data, where here they would only refuse a line or print a wrong
+  answer.

@@ -11,8 +11,8 @@ GOLDEN = [
     (1990, "MCMXC"), (2026, "MMXXVI"), (3999, "MMMCMXCIX"),
 ]
 
-# independent positional formulation: a different algorithm than either
-# drilled direction (table walk / lookahead scan)
+# Reference: one lookup table per decimal place, as SPEC §1 writes numerals.
+# It is a different method from both to_roman's table walk and from_roman's scan.
 ONES = ("", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX")
 TENS = ("", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC")
 HUNDREDS = ("", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM")
@@ -30,12 +30,12 @@ def test_golden_pairs_both_ways(sub):
         assert sub.from_roman(numeral) == n
 
 
-def test_full_space_render_against_positional_oracle(sub):
+def test_every_number_renders_as_the_place_tables_write_it(sub):
     for n in range(1, 4000):
         assert sub.to_roman(n) == _ref_roman(n), n
 
 
-def test_full_space_parse_against_positional_oracle(sub):
+def test_every_numeral_parses_back_to_its_number(sub):
     for n in range(1, 4000):
         assert sub.from_roman(_ref_roman(n)) == n, n
 
@@ -55,7 +55,7 @@ def _feed(monkeypatch, text: str) -> None:
     monkeypatch.setattr(sys, "stdin", io.StringIO(text))
 
 
-def test_main_answers_in_the_python_wording(sub, monkeypatch, capsys):
+def test_main_prints_the_python_versions_messages(sub, monkeypatch, capsys):
     _feed(monkeypatch, "1990\nMCMXC\nIIII\n4000\nhello\n\n")
     sub.main()
     assert capsys.readouterr().out.splitlines() == [

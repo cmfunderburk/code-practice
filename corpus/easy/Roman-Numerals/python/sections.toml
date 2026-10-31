@@ -3,21 +3,21 @@ title = "Roman Numerals"
 [[section]]
 name = "tables"
 symbols = ["VALUES", "ROMAN_TABLE"]
-cue = "The two tables: each of the seven letters to its value, and the thirteen (value, symbol) render pairs from 1000 down to 1, subtractive pairs included."
+cue = "The two tables: each of the seven numeral letters with its value, and the thirteen (value, symbol) pairs from 1000 down to 1 that to_roman writes from, subtractive pairs included."
 
 [[section]]
 symbols = ["to_roman"]
-cue = "Render: ValueError outside 1..3999 (out of range: n); otherwise walk the render table greedily, taking each symbol as many times as its value divides what remains."
+cue = "Number to numeral: raise ValueError(\"out of range: n\") outside 1 to 3999; otherwise walk ROMAN_TABLE from the top, appending each symbol as many times as its value fits into what is left."
 
 [[section]]
 symbols = ["from_roman"]
-cue = "Parse, assuming canonical input: sum the letter values, subtracting any letter worth less than the one after it."
+cue = "Numeral to number, assuming a valid numeral: add up the letters' values, but subtract a letter's value when the letter after it is worth more."
 
 [[section]]
 symbols = ["_canonical"]
-cue = "Shell predicate: the round-trip law as a validator. A numeral is canonical when rendering its parse gives it back; a ValueError from the render means not canonical."
+cue = "Is a numeral valid? Convert it to a number and back, and compare the result with the original; a ValueError from to_roman means it is not valid."
 
 [[section]]
 name = "main"
 symbols = ["main", "__main__"]
-cue = "Composition root: read lines with input() until end of input, each trimmed and folded to uppercase. ASCII digits print their numeral, or the range error as error:; an empty line or one with a non-numeral letter prints an error: usage hint; a canonical numeral prints its value, any other prints error: not a canonical numeral: line. Then the module guard."
+cue = "The program's loop: read lines with input() until end of input, removing surrounding spaces and converting each to uppercase. A line of ASCII digits prints its numeral, or the range error as \"error: <message>\". An empty line, or one containing a letter that is not a numeral letter, prints \"error: enter a number 1-3999 or a Roman numeral\". A valid numeral prints its value; any other prints \"error: not a canonical numeral: <line>\". Then the if __name__ == \"__main__\" guard."

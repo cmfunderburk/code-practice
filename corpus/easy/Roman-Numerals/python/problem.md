@@ -1,10 +1,12 @@
 # Roman Numerals — Table Render
 
-A both-ways Roman numeral converter, domain **1..3999**, canonical modern
-subtractive forms, uppercase. `to_roman(n)` renders an int as a numeral and
-raises `ValueError` outside the domain; `from_roman(s)` parses a canonical
-numeral back to an int (it may assume canonical input). Both directions
-live in one program, and each doubles as a round-trip oracle for the other.
+A Roman numeral converter that works in both directions, for the numbers 1 to
+3999, using the modern subtractive forms (`IV`, not `IIII`) in uppercase.
+`to_roman(n)` turns a number into its numeral, and raises `ValueError` when `n` is
+outside 1 to 3999. `from_roman(s)` turns a numeral back into a number, and may
+assume that `s` is a valid numeral. Because the program converts both ways, you
+can check `to_roman` with `from_roman`: run the program, type a number, then type
+the numeral it prints, and you should get the number back.
 
 ## Examples
 
@@ -14,11 +16,11 @@ to_roman(2026) -> "MMXXVI"     from_roman("MMMCMXCIX") -> 3999
 to_roman(4)    -> "IV"         to_roman(0) / to_roman(4000) -> ValueError
 ```
 
-Constraints: `from_roman` input is a canonical uppercase numeral.
+Constraints: `from_roman`'s input is a valid uppercase numeral.
 
 ## Table Render
 
-The render direction is a table and a walk:
+The number-to-numeral direction is a table and a walk:
 
 ```python
 ROMAN_TABLE = ((1000, "M"), (900, "CM"), ...)   # descending; subtractive pairs are rows
@@ -26,13 +28,15 @@ ROMAN_TABLE = ((1000, "M"), (900, "CM"), ...)   # descending; subtractive pairs 
 def to_roman(n: int) -> str
 ```
 
-Walk the descending table, `divmod` off each value, append
-`symbol * count`. Getting the 13 rows right IS the drill.
+Walk the table from the largest value down. For each row, `divmod` gives how many
+times the value fits into what is left, and the remainder; append the symbol that
+many times. Most of the work is getting the table's 13 rows right.
 
-The surrounding program is `VALUES`, `from_roman` (the subtractive scan),
-`_canonical`, and the both-ways `main()` shell. `main()` reads lines with
-`input()` until end of input, trimming each and folding it to uppercase. ASCII
-digits print `to_roman` of their value, or its `out of range` error. Numeral
-letters print their value when the numeral is canonical, which `_canonical`
-checks by rendering the parse back and comparing. Every refusal prints as
-`error: <message>`. The converter itself is `SPEC.md`.
+Around it sit `VALUES` (each letter's value), `from_roman`, `_canonical`, and
+`main()`. `main()` reads lines with `input()` until end of input,
+removing surrounding spaces and converting each line to uppercase. A line of ASCII
+digits prints `to_roman` of its value, or the `out of range` error it raises. A
+line of numeral letters prints its value if it is a valid numeral, which
+`_canonical` checks by converting it to a number and back and comparing the result
+with the line. Every refusal prints as `error: <message>`. The full behavior is in
+`SPEC.md`.

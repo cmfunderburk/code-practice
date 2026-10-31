@@ -60,7 +60,7 @@ fn canonical_is_the_round_trip() {
 }
 
 #[test]
-fn answers_in_the_rust_wording() {
+fn answers_with_the_rust_versions_messages() {
     assert_eq!(answer("1990"), "MCMXC");
     assert_eq!(answer("MCMXC"), "1990");
     assert_eq!(answer(" 0042 "), "XLII");

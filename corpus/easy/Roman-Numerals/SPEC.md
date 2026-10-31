@@ -1,11 +1,15 @@
 # Roman Numerals — SPEC
 
-The converter every version implements, in any language. The Python version
-(`python/problem.md`) adds the API. Each implementation is its language's natural
-program: how it reads a line (whether it trims spaces, folds case, or accepts a
-sign or leading zeros) and how it words a refusal are its own. The **numerals**
-(§1) are not: they are the program's data, the same in every implementation.
-Beyond them, only the output facts in §4 are fixed.
+This document specifies a program that converts between numbers and Roman
+numerals. There are three versions of it, in Python, C, and Rust, and each is
+written the way a programmer in that language would usually write it. All three
+must agree on the numerals themselves (§1). They may differ in how they read a
+line (whether they ignore surrounding spaces, accept lowercase letters, or accept
+a sign or leading zeros) and in how they word an error message.
+
+The Python version's API is in `python/problem.md`. Each version has its own tests,
+and all three also run the shared tests in `test_program.py`, which check only
+the facts in §4.
 
 ## 1. Numerals
 
@@ -34,7 +38,7 @@ of some number from 1 to 3999. `IIII`, `IC`, `VX`, `XM`, and `MMMM` are made of
 numeral letters but are not canonical. There are exactly 3999 canonical numerals,
 and the longest, `MMMDCCCLXXXVIII` (3888), has 15 letters.
 
-## 2. Playing
+## 2. Using the program
 
 The program is used at a terminal, one request per line, on stdin and stdout. It
 prints no banner and no prompt.
@@ -45,15 +49,18 @@ prints no banner and no prompt.
   a line that is neither a number nor a numeral.
 - End of input ends the program.
 
-Which lines count as a number or a numeral beyond plain ASCII digits and plain
-uppercase letters (`0042`, ` 12 `, `+7`, `mcmxc`, `XLII\r`) is each
-implementation's choice. The exit status is 0 whenever input is well formed UTF-8
-text.
+A line of plain ASCII digits is always read as a number, and a line of plain
+uppercase letters as a possible numeral. Each version decides for itself how to
+read other lines, such as `0042`, ` 12 ` (with spaces), `+7`, `mcmxc`, or `XLII`
+followed by a carriage return. The program exits with status 0 whenever its input
+is well-formed UTF-8 text.
 
-## 3. A session (one implementation)
+## 3. A sample session (the Python version)
 
-The Python version's shell prints this; other implementations may word their
-refusals, and read their lines, their own way.
+The Python version prints this. The C and Rust versions word their error messages
+differently, and read some other lines differently. For example, the Python and
+Rust versions ignore spaces around any line, while the C version accepts them only
+before a number.
 
 ```
 > 1990
@@ -75,14 +82,13 @@ error: enter a number 1-3999 or a Roman numeral
 (`> ` marks the user's lines, which a terminal echoes; the program prints no
 prompt.)
 
-## 4. Fixed output
+## 4. What the shared tests check
 
-These are the only output facts every implementation keeps fixed; all other
-wording is each implementation's own. They hold for plain lines: ASCII digits
-without leading zeros, uppercase letters, and junk no implementation would read
-as either.
+These are the only facts about the output that every version must share. The
+tests send only plain lines: ASCII digits without leading zeros, uppercase
+letters, and junk that no version would read as a number or a numeral.
 - Each line is answered with exactly one line.
-- A numeral answer holds the numeral exactly (§1), and no other word made only of
-  the letters `IVXLCDM`.
-- A value answer holds the value as its one number.
-- A refusal contains the word `error` (any case); no other answer does.
+- A numeral answer contains the numeral exactly (§1), and no other word made only
+  of the letters `IVXLCDM`.
+- A value answer contains the value as its only number.
+- A refusal contains the word `error` (in any case); no other answer does.

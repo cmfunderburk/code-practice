@@ -1,15 +1,17 @@
-"""Roman Numerals smoke suite: each language, run whole on stdin (SPEC §4).
+"""Roman Numerals shared tests: each version run as a whole program (SPEC §4).
 
-The tests use only the `run_program` fixture (`corpus/conftest.py`), which runs the
-program, in each language, on the given stdin and returns its stdout (asserting exit
-status 0). Each implementation words its refusals its own way, so an answer is read
-only for the facts SPEC §4 fixes: a numeral answer holds the numeral as its one word
-of numeral letters, a value answer holds the value as its one number, and a refusal
-holds the word `error`. Expected numerals come from `_numeral`, which renders SPEC
-§1's place-value table, and canonicality is membership in the 3999 numerals it
-builds, never an implementation under test. Lines stay plain (SPEC §4): no leading
-zeros, lowercase, signs, or surrounding spaces, whose reading is each
-implementation's choice.
+The Python, C, and Rust versions all run these tests. They use only the
+`run_program` fixture (`corpus/conftest.py`), which runs the program in each
+language with the given stdin, checks that it exits with status 0, and returns its
+stdout. The versions word their error messages differently, so each answer is
+checked only for the facts SPEC §4 fixes: a numeral answer contains the numeral as
+its only word made of numeral letters, a value answer contains the value as its
+only number, and a refusal contains the word `error`. Expected numerals come from
+`_numeral`, which builds them from SPEC §1's place-value table, and a numeral
+counts as canonical exactly when `_numeral` builds it; no code under test is used
+to compute an expected answer. Every line sent is plain (SPEC §4): no leading
+zeros, lowercase letters, signs, or surrounding spaces, since each version may read
+those its own way.
 """
 
 import random
@@ -114,7 +116,7 @@ def test_lines_that_are_neither_are_refused(run_program, line):
     _is_refusal(answer)
 
 
-def test_a_refusal_costs_nothing(run_program):
+def test_the_program_goes_on_after_a_refusal(run_program):
     lines = ["IIII", "14", "nope", "XIV", "0", "3999"]
     for line, answer in zip(lines, _answers(run_program, lines)):
         _check(line, answer)

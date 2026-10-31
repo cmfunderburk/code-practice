@@ -9,7 +9,7 @@
 //    copies the symbol into a buffer the caller owns. The longest numeral has
 //    15 letters, so 16 bytes always suffice and nothing touches the heap.
 //    [types]
-// 3. Python's `to_roman` raises `ValueError("out of range: n")`, and the shell
+// 3. Python's `to_roman` raises `ValueError("out of range: n")`, and `main`
 //    prints the exception's text. C's returns `false`, and `answer` writes the
 //    refusal itself. [errors]
 // 4. Python's `VALUES` dictionary becomes a `switch` in `letter_value`, which
@@ -111,7 +111,7 @@ static bool number(const char *line, long *value) {
     return end != line && *end == '\0';
 }
 
-// Python's shell for one line, folded to uppercase in place.
+// What Python's `main` does for one line, after converting it to uppercase in place.
 static void answer(char *line) {
     for (char *ch = line; *ch; ch++) *ch = (char)toupper((unsigned char)*ch);
     char numeral[NUMERAL_MAX + 1];

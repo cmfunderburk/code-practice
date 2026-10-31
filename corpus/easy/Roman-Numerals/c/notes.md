@@ -10,13 +10,12 @@ Python source: `python/solution.py`
   with `to_roman`'s `false` standing in for the caught `ValueError`.
 - `letter_value` is a `switch` that returns 0 for a non-letter, so one function
   is both the parser's lookup and the "is it a numeral" test.
-- The shell is C's usual line reader: `fgets` into a 64-byte buffer, `strcspn`
-  to cut the line end (`\r\n` too), `toupper` to fold, and `strtol` to read a
-  number, which skips leading spaces, takes a sign, and clamps a huge number to
-  `LONG_MAX`, out of range like any other. A line too long for the buffer is
-  drained and refused once. Reading bytes by hand and classifying a line as
-  one to four digits or one to fifteen letters would print Python's exact
-  bytes; SPEC leaves that reading to each implementation.
+- `main` reads lines the usual C way: `fgets` into a 64-byte buffer, `strcspn`
+  to cut the line ending (`\r\n` too), and `toupper` to convert to uppercase.
+  `strtol` reads a number: it skips spaces before the number, accepts a sign, and
+  turns a huge number into `LONG_MAX`, which is out of range like any other. No
+  other spaces are removed, so ` 12` is a number but `12 ` and ` XII` are
+  refused. A line too long for the buffer is read to its end and refused once.
 - No heap: the line and every numeral live in fixed buffers on the stack.
 - Python contrasts and idioms: annotated in the reference above.
 - O(L) per line for a line of L bytes.

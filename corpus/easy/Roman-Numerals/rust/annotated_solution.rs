@@ -4,7 +4,7 @@
 // 1. Python's `ROMAN_TABLE` tuple becomes a `const` array of `(i64, &str)` rows,
 //    and the `for` loop takes each row by value (Rust Book 3.1, "Declaring
 //    Constants"). Python's `symbol * count` is `str::repeat`. [table]
-// 2. Python's `to_roman` raises `ValueError` outside 1-3999, and the shell
+// 2. Python's `to_roman` raises `ValueError` outside 1-3999, and `main`
 //    prints the error. Here it returns `Option<String>`, and `answer` writes the
 //    refusal itself (Rust Book 6.1, "The Option Enum"). [errors]
 // 3. The canonical test keeps Python's round trip, render the parse and

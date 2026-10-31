@@ -1,16 +1,25 @@
 # Logo Interpreter — SPEC
 
-The interpreter every implementation builds, in any language. The Python version
-(`python/problem.md`) adds the API and its design. Each implementation is its
-language's natural program for this interpreter: what counts as whitespace,
-which spellings of a number it reads, how far its turtle may travel, how it words
-the state line and an error are its own. The language, the history rule, and the
-drawing it prints are fixed, and all of them keep the fixed output of §4.
+This document specifies an interpreter for a small drawing language in the style
+of Logo. A program in the language steers a *turtle*: a point on a grid that has a
+heading and a pen. When the turtle moves with its pen down, it draws a line
+segment. The user types one program per line, and can undo the most recent
+commands.
+
+There are three versions of the interpreter, in Python, C, and Rust, and each is
+written the way a programmer in that language would usually write it. All three
+must agree on the language, the history rule, and the drawing they print. They may
+differ in what counts as whitespace, which spellings of a number they accept, how
+far the turtle may travel, and how they word the state line and an error message.
+
+The Python version's API is in `python/problem.md`. Each version has its own
+tests, and all three also run the shared tests in `test_program.py`, which check
+only the facts in §4.
 
 ## 1. The turtle and its language
 
-A turtle moves on an integer grid. It starts at `(0, 0)`, heading **east**, with its
-pen **down**. North increases y, and east increases x.
+The turtle moves on an integer grid. It starts at `(0, 0)`, heading **east**, with
+its pen **down**. North increases y, and east increases x.
 
 | Command | Effect |
 | --- | --- |
@@ -24,11 +33,13 @@ words of their own, with or without spaces around them. Letters are
 case-insensitive: `forward`, `Forward`, and `FORWARD` are the same.
 
 **Numbers.** A count or distance is a decimal integer of at least 1. Plain digits
-(`2`, `10000`) are numbers in every implementation; whether a `+` sign, leading
-zeros, or `_` digit separators are also accepted is the implementation's, as its
-language's integer parser decides. `3.0`, `1e3`, `three`, `0`, and `-2` are never valid counts.
+(`2`, `10000`) are numbers in every version. Whether a `+` sign, leading zeros, or
+`_` between digits are also accepted depends on the version: each reads numbers
+with its language's usual integer parser. `3.0`, `1e3`, `three`, `0`, and `-2` are
+never valid counts.
 
-**Programs.**
+**Programs.** In this grammar, `command*` means zero or more commands, and `|`
+separates the choices:
 
 ```
 program := command*
@@ -41,16 +52,18 @@ number, a count or distance below 1, a `REPEAT` without `[`, a missing `]`, or a
 unexpected `]`. Nothing on such a line runs, not even the commands before the
 mistake.
 
-How large a number may be, and how far the turtle may travel, are the
-implementation's: Python's integers are unbounded, and a port may use 64-bit
-coordinates and report a line that would overflow them as an error.
+How large a number may be, and how far the turtle may travel, depend on the
+version. Python's integers have no size limit. The C and Rust versions keep
+coordinates in 64-bit integers, and report a line that would overflow them as an
+error.
 
-**History.** Each **top-level** command of a program is one history entry. A whole
-`REPEAT` is one entry, however many commands its block runs, including a `REPEAT`
-with an empty block. `UNDO` restores the turtle, pen, and drawing to what they were
-before the most recent entry and removes that entry.
+**History.** Each **top-level** command of a program, meaning one that is not
+inside a `REPEAT` block, is one history entry. A whole `REPEAT` is one entry,
+however many commands its block runs, and so is a `REPEAT` with an empty block.
+`UNDO` restores the turtle, pen, and drawing to what they were before the most
+recent entry, and removes that entry.
 
-## 2. Playing
+## 2. Using the program
 
 The program is used at a terminal, one line at a time, on stdin and stdout.
 - A line whose only word is `UNDO`, in any case, undoes. `UNDO` is not part of the
@@ -65,19 +78,20 @@ The program is used at a terminal, one line at a time, on stdin and stdout.
   <x1>,<y1> -> <x2>,<y2>
   ```
 
-  The drawing is the program's output data, as a frame's grid is Game of Life's:
-  every implementation writes the same segment lines, so a plotter could read any of them.
+  The drawing is the program's output, and every version writes the same segment
+  lines, so another program (one driving a plotter, say) could read the drawing
+  from any version.
 - A line that fails, a program error or an `UNDO` with no history left, is answered
   with one line saying what was wrong, and changes nothing: not the turtle, not the
   drawing, not the history.
 - The session ends at end of input. There is no banner and no prompt.
 
-The exit status is 0 whenever input is well formed UTF-8 text.
+The program exits with status 0 whenever its input is well-formed UTF-8 text.
 
-## 3. A session (one implementation)
+## 3. A sample session (the Python version)
 
-The Python version's shell prints this; other implementations may word the state
-line and the errors their own way.
+The Python version prints this. The C and Rust versions print the same lines for
+this session, but each version may word its state line and its errors its own way.
 
 ```
 > FORWARD 2 LEFT
@@ -110,14 +124,15 @@ error: nothing to undo
 prompt.) The first `UNDO` removes the whole `REPEAT`, the second removes `PENUP`,
 and the empty line prints the report without adding history.
 
-## 4. Fixed output
+## 4. What the shared tests check
 
-These are the only output facts every implementation keeps fixed:
+These are the only facts about the output that every version must share:
 - Each input line is answered with either one error line or one report.
-- An error line contains the word `error` (any case). No report line does.
+- An error line contains the word `error` (in any case). No report line does.
 - A report is a state line followed by the drawing's segment lines, exactly
   `x1,y1 -> x2,y2`. The state line's first two integers are the turtle's x and y,
   and it is not itself a segment line.
 
-They hold for input written with single spaces between words, numbers as plain
-digits up to 10000, and only ASCII.
+The tests use only ASCII. They separate words with spaces and tabs, and write
+numbers as plain digits up to 10000, apart from spellings that no version accepts
+as a count, such as `0`, `-2`, or `3.0`.

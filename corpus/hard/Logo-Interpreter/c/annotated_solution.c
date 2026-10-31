@@ -1,20 +1,20 @@
 // Logo Interpreter: whole program.
 // From Python:
-// 1. The command objects survive as data: Python's tree of frozen `Command`
-//    values becomes one flat array in preorder. A `REPEAT` records its `span`,
+// 1. Commands are still values, but Python's tree of frozen `Command` values
+//    becomes one flat array in preorder. A `REPEAT` records its `span`,
 //    the number of commands in its body, nested ones included, so its body is
 //    the next `span` entries, and `run` steps over a command and its body with
 //    `i += 1 + span`. A parse never builds a pointer. [approach]
 // 2. Python's undo entry is `Restore(before)`, a whole previous `Drawing`. Here
-//    the snapshot is a 32-byte `Turtle`: position, heading, pen, and how many
+//    an entry is a 32-byte `Turtle`: position, heading, pen, and how many
 //    segments existed. Commands only ever append segments, so every earlier
 //    drawing is a prefix of the current one, and restoring the count drops
 //    exactly what the undone command drew. Undo copies no segments. [approach]
 // 3. Python's frozen `Drawing` builds a new value per command, and its
 //    `segments` tuple grows by concatenation. C changes one `Logo` in place
 //    and appends segments to a growable array. [types]
-// 4. Python raises `ValueError` from deep in the recursive parser, and the
-//    shell prints it. C's parser returns `false` up the recursion and leaves
+// 4. Python raises `ValueError` from deep in the recursive parser, and `main`
+//    prints it. C's parser returns `false` up the recursion and leaves
 //    the message, and the token it blames, in the `Parser`. Nothing runs
 //    before the whole line has parsed, as in Python. [errors]
 // 5. Python spaces out the brackets, upper-cases the line, and calls
@@ -26,8 +26,9 @@
 //    an error here, and reports a value past `int64_t` through `errno`. [library]
 // 7. Python's integers never overflow. Coordinates are `int64_t`, and `apply`
 //    moves the turtle with `ckd_mul` and `ckd_add`, which report an overflow
-//    instead of wrapping into undefined behavior. The line that overflows is an
-//    error and is rolled back whole. [integers]
+//    instead of performing it (signed overflow is undefined behavior in C). A
+//    line that would overflow is an error, and `logo_execute` undoes all of it.
+//    [integers]
 // 8. Python reads with `input()`, which raises `EOFError` at end of input.
 //    `read_line` grows its buffer with `getchar` until the newline, so a line of
 //    any length arrives whole, and returns `false` at end of input. [io]
@@ -69,7 +70,7 @@ typedef struct {
 } Segment;
 
 // Everything about the drawing except the segments themselves: the
-// state and the undo snapshot are the same type.
+// current state and each undo entry are the same type.
 typedef struct {
     int64_t x, y;
     int heading;
@@ -77,8 +78,9 @@ typedef struct {
     size_t segments;
 } Turtle;
 
-// `turtle.segments` counts the live entries of `segments`; entries
-// past it are dropped history, overwritten by the next segment.
+// `turtle.segments` counts the entries of `segments` in the drawing;
+// entries past it belong to undone commands, and the next segment drawn
+// overwrites them.
 typedef struct {
     Turtle turtle;
     Segment *segments;
@@ -275,9 +277,9 @@ static bool run(Logo *logo, const Command program[], size_t len) {
     return true;
 }
 
-// One snapshot per top-level command, as Python appends one `Restore`. An
-// overflow puts back the line's first snapshot, so a failing line changes
-// nothing, segments included.
+// One undo entry per top-level command, as Python appends one `Restore`. An
+// overflow puts back the first entry pushed for the line, so a failing line
+// changes nothing, segments included.
 static bool logo_execute(Logo *logo, const Program *program) {
     size_t start = logo->undo_len;
     for (size_t i = 0; i < program->len; i += 1 + program->items[i].span) {
@@ -295,7 +297,7 @@ static bool logo_execute(Logo *logo, const Program *program) {
     return true;
 }
 
-// Python's `Restore.apply`: the snapshot replaces the turtle wholesale.
+// Python's `Restore.apply`: the saved turtle replaces the current one.
 static bool logo_undo(Logo *logo) {
     if (logo->undo_len == 0) return false;
     logo->turtle = logo->undo[--logo->undo_len];

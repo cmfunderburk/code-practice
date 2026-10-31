@@ -60,7 +60,7 @@ fn step(live: &HashSet<Cell>, rows: usize, cols: usize) -> HashSet<Cell>
 fn parse_input(text: &str) -> Result<World, String>
 ```
 
-Differences from the Python implementation:
+Differences from the Python version:
 - Coordinates are `usize`, so a neighbor off the top or left edge can't be
   formed at all.
 - `parse_input` returns the live set inside a `World`, where Python's returns

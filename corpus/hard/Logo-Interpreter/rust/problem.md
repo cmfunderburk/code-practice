@@ -1,7 +1,9 @@
 # Logo Interpreter
 
-A turtle-graphics interpreter with undo, over stdin and stdout. The turtle
-starts at `(0, 0)` heading east with its pen down; north increases y.
+An interpreter for a small drawing language in the style of Logo, with undo,
+over stdin and stdout. A program steers a *turtle*, a point on a grid with a
+heading and a pen, which draws a line segment when it moves with the pen down. The
+turtle starts at `(0, 0)` heading east with its pen down; north increases y.
 
 | Command | Effect |
 | --- | --- |
@@ -14,7 +16,8 @@ starts at `(0, 0)` heading east with its pen down; north increases y.
   Letters are case-insensitive. A count or distance is an integer of at least 1.
 - **Lines.** A line whose only word is `UNDO` (any case) undoes the most recent
   history entry. Every other line, an empty one included, is a program; each of
-  its top-level commands is one history entry, a whole `REPEAT` included.
+  its top-level commands (those not inside a `REPEAT` block) is one history
+  entry, so a whole `REPEAT` is one entry.
 - **Output.** After each line that succeeds, print a state line whose first two
   integers are x and y, then the drawing, one `x1,y1 -> x2,y2` line per segment,
   oldest first. A line that fails to parse, or an `UNDO` with no history, prints
@@ -22,9 +25,9 @@ starts at `(0, 0)` heading east with its pen down; north increases y.
   runs.
 - There is no prompt, and the session ends at end of input.
 
-The language and the drawing are the program's `SPEC.md`. The state line's
-wording, error messages, number spellings, and how far the turtle may travel are
-the port's own.
+The language and the drawing are specified in the program's `SPEC.md`. The
+state line's wording, error messages, number spellings, and how far the turtle
+may travel are up to this version.
 
 ## A session
 
@@ -79,5 +82,5 @@ top-level command; it returns `Err`, with nothing changed, on a syntax error or
 if a coordinate would overflow `i64`. `undo` returns `Err` with no history.
 
 Differences from the Python version:
-- No `render`; a parsed `Command` is an enum, not a dataclass.
+- There is no `render`, and a parsed `Command` is an enum, not a dataclass.
 - Coordinates are `i64`, and a line that would overflow them is an error.

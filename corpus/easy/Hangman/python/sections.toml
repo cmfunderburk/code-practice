@@ -2,37 +2,37 @@ title = "Hangman"
 
 [[section]]
 symbols = ["imports"]
-cue = "What the program needs: a random source to pick the word, the lowercase alphabet, and a decorator for an immutable record."
+cue = "What the program needs: random to pick the word, string for the lowercase alphabet, and dataclass to define an immutable record."
 
 [[section]]
 symbols = ["WORDS"]
-cue = "The built-in word list the shell picks from: eight lowercase words, each with at least two different letters."
+cue = "The built-in word list main picks from: eight lowercase words, each with at least two different letters."
 
 [[section]]
 symbols = ["HangmanState"]
-cue = "Core state as one immutable value: the secret, the set of letters guessed so far, and the miss budget."
+cue = "The game's state as one immutable value: the secret word, the set of letters guessed so far, and the number of misses allowed."
 
 [[section]]
 symbols = ["new_game"]
-cue = "Constructor: a fresh game for a secret with nothing guessed; the budget defaults to 6."
+cue = "Start a game for a secret word with nothing guessed; the number of misses allowed defaults to 6."
 
 [[section]]
 symbols = ["wrong_count"]
-cue = "Derived view: how many guessed letters are not in the secret."
+cue = "How many of the guessed letters are not in the secret."
 
 [[section]]
 symbols = ["masked"]
-cue = "Derived view: the secret with every unguessed letter shown as _."
+cue = "The secret with each letter not yet guessed shown as _."
 
 [[section]]
 symbols = ["status"]
-cue = "Derived view: won once every secret letter is guessed, lost once misses reach the budget, otherwise playing. Won is checked first."
+cue = "\"won\" once every letter of the secret is guessed, \"lost\" once the misses reach the number allowed, otherwise \"playing\". Check for a win first."
 
 [[section]]
 symbols = ["guess"]
-cue = "Transition: reject a guess after the game is over, or a letter already guessed (ValueError naming the status or the letter); otherwise a new state with the letter added."
+cue = "Refuse a guess once the game is over (ValueError(\"game is over: <status>\")) or a letter already guessed (ValueError(\"already guessed: <letter>\")); otherwise return a new state with the letter added, leaving the old state unchanged."
 
 [[section]]
 name = "main"
 symbols = ["main", "__main__"]
-cue = "Composition root: one state for random.choice(WORDS). While playing: print the mask and wrong: n/max, read a line with input(), stripped and lowercased; end of input prints you quit! with the word and returns; a line that is not one letter a-z asks for one; print the core's ValueError, else thread the new state. Finally you won!/lost! and the word. Then the module guard."
+cue = "The program's loop: pick the secret with random.choice(WORDS) and start one game with new_game. While the game is playing, print the mask, two spaces, and \"wrong: <misses>/<max_wrong>\", then read a line with input(), removing surrounding spaces and converting it to lowercase. At end of input, print \"you quit! the word was <secret>\" and return. A line that is not one letter a-z prints \"one letter a-z, please\". Otherwise call guess: print the message of any ValueError it raises, or else keep the new state it returns. When the game ends, print \"you won! the word was <secret>\" or \"you lost! the word was <secret>\". Then the if __name__ == \"__main__\" guard."

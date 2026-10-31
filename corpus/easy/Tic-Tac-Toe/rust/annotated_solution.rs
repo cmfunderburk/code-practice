@@ -10,7 +10,7 @@
 //    [mutation]
 // 3. Python raises `ValueError` for an illegal move. `play` returns
 //    `Result<Board, String>`, and `main` matches on it (Rust Book 9.2). [errors]
-// 4. Python's shell reads a move with `int(line)`. Here it is
+// 4. Python's `main` reads a move with `int(line)`. Here it is
 //    `line.trim().parse::<usize>()`, which returns `Err` for anything but
 //    digits (an optional `+` aside), and `play` rejects a number off the
 //    board, as Python's `play` does (Rust Book 2, "Comparing the Guess"). [parsing]

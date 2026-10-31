@@ -2,34 +2,34 @@ title = "Expression Calculator"
 
 [[section]]
 symbols = ["Node"]
-cue = "The AST type: a plain tuple alias. Its three tagged shapes: number, negation, binary operator."
+cue = "The tree node type, an alias for tuple, with a comment listing its three shapes: (\"num\", value), (\"neg\", node), and (op, left, right) for op in + - * /."
 
 [[section]]
 symbols = ["tokenize"]
-cue = "Stage 1, scanner: skip spaces and tabs, group runs of digits, emit operators and parentheses one character each; anything else is a ValueError."
+cue = "Text to tokens: skip spaces and tabs, collect each run of ASCII digits as one token, and make each of + - * / ( ) a token of its own; any other character raises ValueError(\"unknown character: <ch>\")."
 
 [[section]]
 symbols = ["parse"]
-cue = "Stage 2 entry: parse an expression from position 0 and reject any tokens left over."
+cue = "Tokens to tree: parse an expression starting at position 0, and raise ValueError(\"trailing input: <token>\") if any tokens are left over."
 
 [[section]]
 name = "_expr + _term"
 symbols = ["_expr", "_term"]
-cue = "Precedence ladder, the binary levels: parse one operand from the level below, then fold left-associative + - (or * /) into (op, left, right) nodes. Each takes and returns a position."
+cue = "The two binary levels of the grammar. Each reads one operand from the level below (_expr from _term, _term from _factor), then loops while the next token is + or - (for _term, * or /), reading the next operand and making (op, node, right) the new node, so operators group from the left. Each takes a position and returns (node, next position)."
 
 [[section]]
 symbols = ["_factor"]
-cue = "Bottom of the ladder: end of input is an error; unary minus recurses into a factor; ( expr ) must close; a digit token is a number node; anything else is an unexpected token."
+cue = "The lowest level: at the end of the tokens, raise ValueError(\"unexpected end of input\"); a - reads another factor and wraps it in (\"neg\", node); a ( reads an expression that must be followed by ), else ValueError(\"expected )\"); a digit token becomes (\"num\", int); anything else raises ValueError(\"unexpected token: <token>\")."
 
 [[section]]
 symbols = ["evaluate"]
-cue = "Stage 3: match on the node shapes and recurse; / is true division. An unknown shape is a ValueError."
+cue = "Tree to value: match the node's shape and compute it, calling evaluate on its children; / is true division. A node of any other shape raises ValueError(\"bad node: <node>\")."
 
 [[section]]
 symbols = ["calculate"]
-cue = "The pipeline: tokenize, parse, evaluate."
+cue = "Text to value: tokenize, then parse, then evaluate."
 
 [[section]]
 name = "main"
 symbols = ["main", "__main__"]
-cue = "Shell: read lines with input() until end of input or an empty line, print each result as Python prints it, and print error: for ValueError and ZeroDivisionError. Then the module guard."
+cue = "The program's loop: read lines with input() until end of input or an empty line, print calculate's result for each, and print a ValueError or ZeroDivisionError as \"error: <message>\". Then the if __name__ == \"__main__\" guard."

@@ -57,7 +57,7 @@ fn the_pen_up_moves_without_drawing() {
 }
 
 #[test]
-fn case_brackets_and_whitespace_are_free() {
+fn case_bracket_spacing_and_whitespace_do_not_matter() {
     let mut logo = Logo::new();
     run(
         &mut logo,
@@ -71,7 +71,7 @@ fn case_brackets_and_whitespace_are_free() {
 }
 
 #[test]
-fn numbers_are_parse_i64() {
+fn numbers_take_a_sign_and_leading_zeros_but_no_underscores() {
     let mut logo = Logo::new();
     run(&mut logo, "FORWARD +3 FORWARD 007").unwrap();
     assert_eq!(logo.turtle.x, 10);

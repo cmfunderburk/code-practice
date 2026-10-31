@@ -1,9 +1,15 @@
 # Tic-Tac-Toe — SPEC
 
-The game every implementation plays, in any language. The Python implementation
-(`python/problem.md`) adds the API and its approach. Each implementation is its
-language's natural program for this game: how it draws the board, words its
-output, and reads a move is its own. Only the output facts in §4 are fixed.
+This document specifies a program that lets two people play Tic-Tac-Toe at one
+terminal. There are three versions of it, in Python, C, and Rust, and each is
+written the way a programmer in that language would usually write it. All three
+play the same game (§1) and number the cells the same way, so the same sequence
+of moves plays the same game in every version. They may differ in how they draw
+the board, how they word their messages, and how they read a line.
+
+The Python version's API is in `python/problem.md`. Each version has its own
+tests, and all three also run the shared tests in `test_program.py`, which check
+only the facts in §4.
 
 ## 1. The game
 
@@ -18,8 +24,8 @@ Two players share one input stream and take turns marking cells of a 3×3 board.
 ## 2. Playing
 
 Two people play at one terminal, one move per line, on stdin and stdout.
-- A move is a cell number, 0 to 8. The cell numbers are the game's own, so a line
-  of moves plays the same game in every implementation.
+- A move is a cell number, 0 to 8, numbered as in §1. Every version uses these
+  numbers, so a list of moves plays the same game in every version.
 - Before each move the players can see the board and whose turn it is.
 - A line that is not a cell number, a number off the board, and a cell already
   marked are each answered. None costs the player the turn.
@@ -27,13 +33,17 @@ Two people play at one terminal, one move per line, on stdin and stdout.
   draw, and stops reading.
 - If input ends first, the program stops.
 
-How an implementation treats spaces or a sign around the number is its own choice. The
-exit status is 0 whenever input is well formed UTF-8 text.
+Each version decides for itself how to read a line with spaces or a sign around
+the number, such as ` 4 ` or `+4`, and whether a number off the board gets the
+same answer as a line that is not a number. The program exits with status 0
+whenever its input is well-formed UTF-8 text.
 
-## 3. A session (one implementation)
+## 3. A sample session (the Python version)
 
-The Python implementation's shell prints this; other implementations may draw the
-board and word their answers their own way.
+The Python version prints this. For these four lines the C and Rust versions
+print exactly the same, but they answer some other lines differently. For
+example, the Python and Rust versions answer `9` with `illegal move: 9`, while
+the C version answers it with `a cell 0-8, please`.
 
 ```
 . . .
@@ -67,11 +77,12 @@ X to move
 (`> ` marks the players' lines, which a terminal echoes; the program prints no
 prompt.)
 
-## 4. Fixed output
+## 4. What the shared tests check
 
-These are the only output facts every implementation keeps fixed:
+These are the only facts about the output that every version must share:
 - When the game ends, the last line names the outcome: it contains `X wins`,
   `O wins`, or the word `draw` (any case). No earlier line contains `wins` or
   `draw`.
 - Every line is answered: a line that is not a legal move produces at least one
   line of output.
+

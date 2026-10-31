@@ -1,21 +1,46 @@
 # Game of Life — SPEC
 
-The world every implementation simulates, in any language. The Python
-implementation (`python/problem.md`) adds the API and its approach. Each
-implementation is its language's natural program: how it reads the header and
-line ends, how it labels a frame, and how it words an error are its own. The
-world's rule, the pattern it reads, and the picture of each generation are fixed,
-and §5 lists the output facts every implementation keeps.
+This document specifies a program that simulates Conway's Game of Life on a
+bounded grid. There are three versions of it, in Python, C, and Rust, and each is
+written the way a programmer in that language would usually write it. All three
+must agree on the rule (§1), the patterns they accept (§2), and the grids they
+print (§3). They may differ in how they read the header line and line endings, in
+how they label each generation, and in how they word an error message.
+
+The Python version's API is in `python/problem.md`. Each version has its own tests,
+and all three also run the shared tests in `test_program.py`, which check only
+the facts in §5.
 
 ## 1. The world
 
-A bounded grid of `rows × cols` cells, each live or dead. Cells outside the grid
-are permanently dead: no wrapping. One generation applies Conway's rule (B3/S23)
-to every cell at once:
+The world is a grid of `rows × cols` cells, each live or dead. A cell's
+**neighbors** are the eight cells touching it, diagonals included. Cells outside
+the grid are always dead: the grid does not wrap around from one edge to the
+opposite edge.
 
-- a live cell with 2 or 3 live neighbors (of its 8) stays live;
+One generation applies Conway's rule, often written B3/S23 (a cell is born with 3
+live neighbors and survives with 2 or 3), to every cell at once:
+
+- a live cell with 2 or 3 live neighbors stays live;
 - a dead cell with exactly 3 live neighbors becomes live;
 - every other cell is dead in the next generation.
+
+"At once" means that every cell's next state is computed from the current
+generation; no cell sees a neighbor's new state.
+
+Three small patterns appear in the examples and the tests:
+
+- A **blinker** is a line of three live cells. The middle cell has two live
+  neighbors and survives, the two end cells have one and die, and the two dead
+  cells beside the middle have three and are born. So the line flips between
+  horizontal and vertical every generation.
+- A **block** is a 2 × 2 square of live cells. Each of its cells has three live
+  neighbors, and no dead cell has three, so it never changes. A pattern that never
+  changes is called a **still life**.
+- A **glider** is a five-cell pattern that returns to its own shape every four
+  generations, moved one cell diagonally. On a bounded grid it can't leave: a
+  glider that starts in the top-left corner of an 8 × 8 grid, moving down and to
+  the right, turns into a block in the bottom-right corner.
 
 ## 2. Input
 
@@ -29,8 +54,8 @@ The program reads one pattern from stdin and simulates it.
 3. **Nothing else:** no lines may follow the grid, blank or not. The last line's
    newline is optional.
 
-How the header's integers may be spaced or signed, and whether a `\r\n` line end
-is accepted, are each implementation's choice.
+Each version decides for itself how to read a header with extra spaces or a sign
+(such as `5  5 +2`), and whether to accept `\r\n` line endings.
 
 ## 3. Output
 
@@ -42,24 +67,28 @@ lines of `cols` characters, `#` and `.`. Generation 0 is the input grid, so
 ## 4. Errors
 
 Input that breaks §2 is answered with one line that says what was wrong, and
-nothing else: an empty input, a header without three integers, a value out of
-range, a grid line of the wrong length or with a character other than `#` or `.`,
-too few lines, or an extra line. The exit status is 0 whenever stdin is well
-formed UTF-8 text.
+nothing else. That covers an empty input, a header without exactly three
+integers, a value out of range, a grid line of the wrong length or with a
+character other than `#` or `.`, too few grid lines, and an extra line. The
+program exits with status 0 whenever stdin is well-formed UTF-8 text.
 
-## 5. Fixed output
+## 5. What the shared tests check
 
-These are the only output facts every implementation keeps fixed:
+These are the only facts about the output that every version must share.
 
 - A run on good input writes `(generations + 1) × (rows + 1)` lines: the frames.
-- A frame's label line holds numbers, and the first is `g`. Its grid lines are
-  exactly the generation's cells, `#` and `.`.
-- A run on bad input writes one line, containing the word `error` (any case).
+- In each frame, the label line contains numbers, and the first is `g`. The grid
+  lines are exactly that generation's cells, `#` and `.`.
+- A run on bad input writes one line, containing the word `error` (in any case).
 
-## 6. A session (one implementation)
+## 6. A sample session (the Python version)
 
-The Python implementation's shell prints this; other implementations may label
-frames and word errors their own way.
+The input is a blinker lying horizontally in the middle of a 5 × 5 grid, run for
+two generations. All three versions print these frames with the same `gen g`
+labels. Their error messages differ: for a 3 × 3 grid whose middle line is `.x.`,
+the Python version prints `error: row 1 must be 3 of '#' or '.': '.x.'`, and the
+C version prints `error: expected a rows cols generations header and a grid of #
+and .`.
 
 Input:
 
@@ -94,9 +123,3 @@ gen 2
 .....
 .....
 ```
-
-## Scope
-
-A full-size Life program adds an unbounded plane with 64-bit coordinates, RLE
-and plaintext files, rule strings, options, and exit codes. Most of that is about
-the shell rather than the step.

@@ -16,7 +16,7 @@ Python source: `python/solution.py`
   and redo never copy text. A parsed `Command::Insert` borrows its text from
   the line; it becomes owned characters only when the edit is built.
 - Errors are `Result<(), String>`, and `main` prints the `Err` text, as
-  Python's shell prints the `ValueError`. `ok_or` with `?` turns an empty stack
+  Python's `main` prints the `ValueError`. `ok_or` with `?` turns an empty stack
   into its message.
 - The parser splits with `split_once(' ')`: one space after the verb, one after
   `<pos>`, and everything after that is the text. A second `split_once` for `d`
@@ -24,6 +24,8 @@ Python source: `python/solution.py`
   `str::parse::<usize>()`, which also takes a `+` and refuses anything past
   `usize::MAX`; `delete` compares `n` with `len - pos`, so a huge `pos + n` is
   never computed.
-- The shell reads with `io::stdin().lines()`, which drops a `\r\n` whole.
+- `main` reads with `io::stdin().lines()`, which drops a whole `\r\n` line
+  ending, so the `\r` of a line ending never reaches the text (Python and C
+  keep it).
 - Python contrasts and idioms: annotated in the reference above.
 - O(L) per edit, undo, or redo for a buffer of L characters; O(L) per `p`.

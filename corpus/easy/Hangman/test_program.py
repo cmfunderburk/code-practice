@@ -1,10 +1,13 @@
-"""Hangman smoke suite: each language, run whole on stdin (SPEC §4).
+"""Hangman shared tests: each version run as a whole program (SPEC §4).
 
-The tests use only the `run_program` fixture (`corpus/conftest.py`), which runs the
-program, in each language, on the given stdin and returns its stdout (asserting exit
-status 0). The secret is really random, so the checks hold for every word: wording
-is the implementation's own, and only SPEC §4's ending line, and the rules visible
-through it, are read. Exact game paths are each implementation's core tests.
+The Python, C, and Rust versions all run these tests. They use only the
+`run_program` fixture (`corpus/conftest.py`), which runs the program in each
+language with the given stdin, checks that it exits with status 0, and returns its
+stdout. Each run picks its secret word at random, so every check must hold
+whichever word is picked. The versions word their output differently, so only the
+facts SPEC §4 fixes are read: the line that says the game was won or lost and
+names the word, and the rules that can be seen through it. Each version's own
+tests check exact games with a known word.
 """
 
 import re

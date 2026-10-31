@@ -2,33 +2,33 @@ title = "Editor Buffer"
 
 [[section]]
 symbols = ["imports"]
-cue = "What the program needs: a decorator for an immutable record."
+cue = "The import: dataclass, used to make the two edit records immutable."
 
 [[section]]
 symbols = ["HELP"]
-cue = "The usage line printed for any unparseable command: i <pos> <text> | d <pos> <n> | u | r | p | q."
+cue = "The usage line printed for any line that is not a command: \"i <pos> <text> | d <pos> <n> | u | r | p | q\"."
 
 [[section]]
 symbols = ["Insert"]
-cue = "Command object, immutable: a position and the text inserted there. Applying splices the text in at the position; its inverse is the Delete of the same position and text."
+cue = "An immutable record of one insert: a position and the text inserted there. apply takes a text and returns it with this text placed at the position; invert returns the Delete of the same position and text."
 
 [[section]]
 symbols = ["Delete"]
-cue = "Command object, immutable: a position and the text removed from there. Applying cuts that many characters out at the position; its inverse is the Insert of the same position and text."
+cue = "An immutable record of one delete: a position and the text removed from there. apply takes a text and returns it with that many characters cut out at the position; invert returns the Insert of the same position and text."
 
 [[section]]
 symbols = ["EditorBuffer"]
-cue = "Core state: the text (empty by default, read through a property) and undo and redo stacks of command objects. insert allows any position 0..len (ValueError insert out of range: pos); delete needs n >= 1 inside the text (ValueError delete out of range: pos+n) and records the removed text. One private helper applies a command, pushes it on undo, and clears redo. undo applies the popped command's inverse and pushes it on redo; redo reapplies and pushes on undo; each refuses an empty stack (nothing to undo / nothing to redo)."
+cue = "The buffer: its text (empty unless given, read through a text property) and two lists used as stacks, one of edits to undo and one of edits to redo. insert accepts a position from 0 to the length of the text, else raises ValueError(\"insert out of range: <pos>\"). delete needs n of at least 1 and pos + n within the text, else raises ValueError(\"delete out of range: <pos>+<n>\"), and saves the removed text in its Delete. One private method applies an edit, pushes it on the undo stack, and clears the redo stack. undo pops an edit, applies its inverse, and pushes the edit on the redo stack; redo pops an edit, applies it again, and pushes it on the undo stack. Each raises ValueError(\"nothing to undo\") or ValueError(\"nothing to redo\") when its stack is empty."
 
 [[section]]
 symbols = ["_number"]
-cue = "Shell helper: a position or count as an int if the text is ASCII digits, else None."
+cue = "A position or count: the text as an int if it is all ASCII digits, else None."
 
 [[section]]
 symbols = ["_command"]
-cue = "Shell helper: parse a line into a verb and its argument tuple, or None. u, r, p, q only as the whole line; i needs a number, a space, and the rest of the line as its text; d needs exactly two space-separated numbers."
+cue = "Split a line into its verb and a tuple of arguments, or return None if it is not a command. u, r, p, and q count only as the whole line. i needs a number, then a space, and the rest of the line is its text; d needs exactly two numbers separated by one space."
 
 [[section]]
 name = "main"
 symbols = ["main", "__main__"]
-cue = "Composition root: read lines with input() until EOFError; an unparseable line prints the help; q stops; i, d, u, r call the buffer; p prints the text in double quotes. A ValueError prints its message bare. Then the module guard."
+cue = "The program's loop: start with an empty buffer and read lines with input() until end of input. A line that is not a command prints HELP; q stops; i, d, u, and r call the buffer's methods; p prints the text between double quotes. A ValueError from the buffer prints its message as it is. Then the if __name__ == \"__main__\" guard."

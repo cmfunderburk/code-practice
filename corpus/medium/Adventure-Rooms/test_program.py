@@ -1,13 +1,15 @@
-"""Adventure Rooms smoke suite: each language, run whole on stdin (SPEC §5).
+"""Adventure Rooms shared tests: each version run as a whole program (SPEC §5).
 
-The tests use only the `run_program` fixture (`corpus/conftest.py`), which runs the
-program, in each language, on the given stdin and returns its stdout (asserting exit
-status 0). Each implementation describes rooms and words its answers its own way, so
-an answer is read only for the facts SPEC §5 fixes: which rooms and items it names.
-A line's answer is what the session prints past the lines before it (end of input
-adds nothing), so `_answers` runs each prefix of a session. Random walks are checked
-against `_WORLD`, the suite's own copy of SPEC §1, never against an implementation
-under test.
+The Python, C, and Rust versions all run these tests. They use only the
+`run_program` fixture (`corpus/conftest.py`), which runs the program in each
+language with the given stdin, checks that it exits with status 0, and returns its
+stdout. The versions may describe rooms and word their answers differently, so
+each answer is checked only for the facts SPEC §5 fixes: which rooms and items it
+names. At end of input the program prints nothing more, so `_answers` finds the
+answer to each line by running every prefix of a session and taking what each
+longer run prints past the shorter one. Random walks are checked against
+`_WORLD`, the tests' own copy of SPEC §1's map; no code under test is used to
+compute an expected answer.
 """
 
 import random

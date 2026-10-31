@@ -1,94 +1,102 @@
-## Verb Dispatch — worked example
+## How it works
 
-**Intuition.** The dispatch table is the natural implementation for a
-verb-driven game: the program IS a mapping from words to behaviors, so
-say it as one. `VERBS` maps each
-verb to a handler `(state, arg) -> (state, output)`, and `execute`
-shrinks to guard + split + table lookup. Adding `sing` to this game is
-one function and one entry; the engine never changes. The seam shows
-behaviorally: register `xyzzy` into `VERBS` and the engine finds it,
-because it consults the table at call time, not a copy taken at import.
+The program is a text adventure run by one function,
+`execute(state, line) -> (state, output)`. The state is one dict with four keys:
+the current `room`, the `inventory` list, `items` (each room's current list of
+items), and `over`. `new_game` builds it, copying each room's list from
+`START_ITEMS`, so two games never share a list.
 
-Worked check: `go north` in the hall — `execute` looks up `_do_go`,
-which rejects a missing arg (`Go where?`), rejects a non-exit
-(`You can't go that way.`), or moves the player and returns the new
-room's `_look`.
+`VERBS` is a *dispatch table*: a dictionary from each command word to the function
+that handles it, its *handler*. Every handler has the same shape,
+`(state, arg) -> (state, output)`. `execute` refuses any command after `quit`,
+removes surrounding spaces, splits the line at the first space into a verb and an
+argument, looks the verb up in `VERBS`, and calls the handler with the argument
+stripped. `execute` itself knows nothing about rooms or items: adding a `sing`
+command would be one new function and one new entry in `VERBS`, and `execute`
+would not change. Because `execute` reads `VERBS` on every call, not a copy made
+when the module was loaded, a verb added to the dictionary while the program runs
+is found on the next call.
 
-**Complexity.**
-- Time: $O(1)$ verb lookup + handler work; Space: a six-entry table.
+`_look` writes a room's description: `You are in <description>.`, then `Exits:`
+and the room's exits, then `You see:` and the room's items, only when there are
+any. It lists the exits by walking `DIRECTIONS`, not the room's entry in `EXITS`,
+so they always come out in the order north, south, east, west.
 
-**Discussed, not drilled.** The contrast with an if/elif ladder is the lesson:
-same six behaviors, but here verb *selection* is data while verb
-*behavior* stays code. `functools.singledispatch` and class-based
-command objects are the stdlib and OO flavors of the same seam. The
-next size up — per-verb argument parsing, per-verb help text — hangs
-naturally off the table as richer entry values, none of which touches
-`execute`.
+Worked check: `go north` in the hall. `execute` splits the line into `go` and
+`north` and calls `_do_go`. `_do_go` would answer `Go where?` for an empty argument
+and `You can't go that way.` for a direction with no exit. `north` is an exit of
+the hall, so it sets `room` to `library` and returns `_look` of the library.
 
-**The drilled representative composition root.** `main()` turns the shared
-`(state, line) -> (state, output)` API into a conversation: it prints the opening
-look, then reads stdin a line at a time with `input()`.
-Successful calls replace the current state and print their output, while an
-exception preserves the prior binding when the failing operation did not mutate
-it. The built-in unknown-verb and terminal guards fail before mutation, but
-`main()` cannot undo a custom handler that mutates and then raises. The loop ends
-when `quit` sets the terminal flag, or silently when `input()` raises `EOFError`
-at end of input. Each line goes
-to `execute` untouched: trimming and splitting are the engine's job.
+**Complexity.** Splitting a line of n characters takes O(n) time. The verb lookup
+is O(1), and each handler works on lists of at most five items.
 
-Successful state-changing commands (`go`, `take`, `drop`, `quit`) mutate the
-session dict in place and return it. `look` and `inventory` only observe it;
-rejected built-in operations return it unchanged or raise before mutation.
+## `main`
 
-**Reversal pressures.** For a closed six-verb game, the ladder can be the
-stronger design: selection and behavior stay together in one locally readable
-function, while dispatch adds handler and table indirection. For one fixed
-five-room world, module constants can likewise be stronger than one `WORLD` value,
-which adds a trusted schema convention and copies every room's item list per session.
-Growing verbs favors dispatch; growing or replaceable content favors world data.
+`main()` turns `execute` into a session at a terminal. It creates one state,
+prints the opening description, and then reads one line at a time with `input()`
+until the state's `over` flag is set. It hands each line to `execute` unchanged,
+since removing spaces and splitting are `execute`'s job. After a successful line
+it keeps the state `execute` returned and prints the output. When `execute` raises
+`ValueError` for an unknown verb, `main` prints the message as it is and keeps its
+old state. At end of input, `input()` raises `EOFError`, and `main` returns without
+printing anything.
 
-## Shapes chosen and rejected
+Keeping the old state after an error is safe for the program's own errors, because
+`execute` raises them before it calls any handler. It is not an undo: a handler
+that changed the state and then raised would leave its change behind.
 
-- **A verb table (chosen)** over an **if/elif ladder**. Both hold the same six
-  behaviors. The table makes verb selection data, so a new verb is a handler and
-  an entry and `execute` never changes; registering `xyzzy` at run time shows
-  it. The ladder keeps selection and behavior in one locally readable function,
-  which is the stronger shape only while the verb set is closed.
-- **Module constants (chosen)** over **one `WORLD` value**. With one fixed
-  five-room world, three constants read directly. The data version turns the
-  engine into an interpreter for any world, at the cost of a trusted schema and
-  a copy of every room's item list per session. It wins once content grows or
-  must be replaceable.
-- **In-fiction failures are output; only caller mistakes raise.** `Go where?`
-  and `There is no sword here.` are answers the game gives, so handlers return
-  them. A verb outside the table, or any command after `quit`, is the caller's
-  mistake, so `execute` raises. The shell never sends a line after `quit`, and it
-  prints an unknown verb's message. Both reach stdout the same way, so the Python
-  version never writes `error:`; SPEC leaves a refusal's wording to each
-  implementation.
-- **Line-by-line reading with a silent end.** The shell reads one line per
-  command, so a person can play at a terminal, and end of input ends the session
-  with no message. An `input("> ")` shell would print a prompt into every
-  transcript and die at end of input with `EOFError` and exit status 1. This one
-  reads with plain `input()` and catches the `EOFError`.
-- **Trimming is Python's.** The drilled `execute` trims with `str.strip()`,
-  which removes 29 Unicode whitespace characters, among them `\t`, `\r`, and
-  U+00A0. SPEC fixes only the space and leaves the rest to each implementation,
-  rather than ruling out every other whitespace character so that a port
-  trimming spaces would print the same bytes: Rust's
-  `trim()` removes Unicode whitespace much as Python does, and C's `isspace`
-  trims the ASCII ones.
-- **The world and rules are the shared part.** The map, the items, and what each
-  command does are SPEC §1 and §3 in every implementation; a room's description
-  and a refusal's wording are each implementation's own. The fixed output (SPEC
-  §5) is little more than the room and item names an answer contains.
+Successful `go`, `take`, `drop`, and `quit` commands change the state dict in place
+and return it. `look` and `inventory` only read it, and a refused command (`Go
+where?`, `There is no sword here.`) returns it unchanged.
 
-## Scales up to
+## Design choices
 
-A Unix shell keeps a *dispatch table* for its builtins: the first word of a
-parsed line is looked up among `cd`, `exit`, and `export`, as a verb is looked
-up in `VERBS`, and `exit` ends the loop as `quit` does here. Its interactive mode has this program's
-ending too: EOF exits. Two things change at that size. A word that misses the
-table is not an error: a shell's archetype is programs running programs, through
-`fork`, `exec`, and `wait`. And the line must first be tokenized with quoting and
-expanded, where this engine only splits at the first space.
+- **A table, not an `if`/`elif` chain.** The six commands could be six branches of
+  one function. That keeps choosing a command and carrying it out in one place,
+  which reads well while the set of commands never changes. The table separates
+  the two: choosing a command is a dictionary lookup in `execute`, and carrying it
+  out is the handler's job, so adding a command never touches `execute`.
+- **The map in three constants, not one world value.** `DESCRIPTIONS`, `EXITS`,
+  and `START_ITEMS` describe one fixed five-room world, and the handlers read them
+  directly. Putting the whole map into one value passed to `new_game` would let the
+  same code play any map, but then the program has to trust that the value has the
+  right shape: every room with a description, exits, and items, and every exit
+  leading to a room that exists. That is worth doing once the map grows or is
+  loaded from a file, and then the program should check the map when it loads it.
+- **Refusals are answers; mistakes by the caller raise.** `Go where?` and
+  `There is no sword here.` are answers the game gives the player, so handlers
+  return them. A verb that isn't in `VERBS`, or any command after `quit`, is a
+  mistake by whoever called `execute`, so `execute` raises `ValueError`. `main`
+  never sends a line after `quit`, and it prints an unknown verb's message like any
+  other answer, so the player sees `unknown verb: dance` with no `error:` in front.
+  SPEC leaves the wording of refusals to each version.
+- **One line per command, and a silent end.** `main` reads one line per command,
+  so a person can play at a terminal, and it prints no prompt. At end of input it
+  catches `EOFError` and stops without a message. A `main` that read with
+  `input("> ")` would print `> ` into every transcript, and one that didn't catch
+  `EOFError` would end every session piped from a file with a traceback and exit
+  status 1.
+- **Trimming uses Python's `strip()`.** `execute` trims with `str.strip()`, which
+  removes the 29 characters Python counts as whitespace, among them `\t`, `\r`,
+  and the no-break space U+00A0. SPEC fixes only how ordinary spaces are handled
+  and leaves other whitespace to each version. Rust's `trim()` removes the same
+  characters as Python's `strip()` except four ASCII control characters
+  (`\x1c` to `\x1f`); C's `isspace` covers only the six ASCII whitespace
+  characters.
+- **The world and the rules are shared; the wording is not.** The map, the items,
+  and what each command does are SPEC §1 and §3 in every version. A room's
+  description and a refusal's wording are each version's own. The shared tests read
+  only which room and item names an answer contains.
+
+## Where this shows up again
+
+A Unix shell such as `sh` handles a few commands itself, called *builtins*: `cd`,
+`exit`, and `export`. It looks the first word of each line up among them, as
+`execute` looks a verb up in `VERBS`, and `exit` ends its loop as `quit` ends this
+one. An interactive shell also ends at end of input, as this program does.
+
+Two things change at that size. A word that isn't a builtin is not an error: the
+shell runs the program with that name, starting it with `fork` and `exec` and
+waiting for it with `wait`. And before it can find the first word, the shell must
+split the line into words, respecting quotes, and replace variables such as
+`$HOME` with their values, where `execute` only splits at the first space.

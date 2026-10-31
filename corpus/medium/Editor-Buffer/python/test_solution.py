@@ -6,7 +6,7 @@ import pytest
 
 
 class SnapshotOracle:
-    """Independent oracle: naive full-text snapshot re-application."""
+    """Reference: saves a copy of the whole text before each edit, not commands."""
 
     def __init__(self, text: str = "") -> None:
         self.text = text
@@ -53,7 +53,7 @@ def test_scripted_replay_hand_computed(sub):
         buf.redo()  # new edit cleared the redo stack
 
 
-def test_initial_text_and_boundary_positions(sub):
+def test_initial_text_and_positions_at_the_ends(sub):
     buf = sub.EditorBuffer("ab")
     buf.insert(2, "c")  # insert at len is legal
     assert buf.text == "abc"
@@ -78,7 +78,7 @@ def test_edit_validation(sub):
     assert buf.text == "abc"
 
 
-def test_underflow_raises_from_every_state(sub):
+def test_undo_and_redo_refuse_when_their_stack_is_empty(sub):
     buf = sub.EditorBuffer("seed")
     with pytest.raises(ValueError):
         buf.undo()  # fresh buffer: nothing to undo
@@ -105,7 +105,7 @@ def test_failed_edit_leaves_history_intact(sub):
     assert buf.text == ""
 
 
-def test_seeded_fuzz_against_snapshot_oracle(sub):
+def test_random_edits_match_a_snapshot_history(sub):
     rng = random.Random(2026)
     buf = sub.EditorBuffer("seed text")
     oracle = SnapshotOracle("seed text")
@@ -132,21 +132,21 @@ def test_seeded_fuzz_against_snapshot_oracle(sub):
         assert buf.text == oracle.text
 
 
-def test_commands_are_reified_values(sub):
+def test_commands_are_values_that_apply_and_invert(sub):
     ins = sub.Insert(1, "xy")
     assert ins.apply("ab") == "axyb"
     assert ins.invert().apply("axyb") == "ab"
     dele = sub.Delete(1, "b")
     assert dele.apply("abc") == "ac"
     assert dele.invert().apply("ac") == "abc"
-    assert ins == sub.Insert(1, "xy")  # value semantics: replayable records
+    assert ins == sub.Insert(1, "xy")  # equal fields make equal commands
 
 
 def _feed(monkeypatch, text: str) -> None:
     monkeypatch.setattr(sys, "stdin", io.StringIO(text))
 
 
-def test_main_answers_in_the_python_wording(sub, monkeypatch, capsys):
+def test_main_prints_the_python_versions_messages(sub, monkeypatch, capsys):
     _feed(monkeypatch, "i 0 ab\ni 5 x\nd 1 9\nu\nu\nr\nr\nx\np\nq\np\n")
     sub.main()
     assert capsys.readouterr().out.splitlines() == [
@@ -159,7 +159,7 @@ def test_main_answers_in_the_python_wording(sub, monkeypatch, capsys):
     ]
 
 
-def test_main_parses_numbers_as_python_ints(sub, monkeypatch, capsys):
+def test_main_reads_numbers_as_ascii_digits_of_any_length(sub, monkeypatch, capsys):
     _feed(monkeypatch, "i 000 abc\nd 01 1\ni 1234567890123 x\ni \u0663 y\ni +1 y\np\n")
     sub.main()
     assert capsys.readouterr().out.splitlines() == [

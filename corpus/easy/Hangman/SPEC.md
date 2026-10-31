@@ -1,9 +1,14 @@
 # Hangman — SPEC
 
-The game every implementation plays, in any language. The Python version
-(`python/problem.md`) adds the API. Each implementation is its language's natural
-program for this game: how it picks the word, words its output, and handles bad
-input is its own. Only the output facts in §4 are fixed.
+This document specifies a game of Hangman played at a terminal. There are three
+versions of it, in Python, C, and Rust, and each is written the way a programmer in
+that language would usually write it. All three follow the same rules (§1). They
+may differ in how they pick the word, how they word their output, and how they
+read lines that are not a plain single letter.
+
+The Python version's API is in `python/problem.md`. Each version has its own
+tests, and all three also run the shared tests in `test_program.py`, which check
+only the facts in §4.
 
 ## 1. The game
 
@@ -15,11 +20,12 @@ The player guesses letters of a secret word, one at a time, with a budget of
   **lost** when the sixth miss is made.
 - Guessing a letter already guessed, hit or miss, is rejected and costs nothing.
 
-The program picks the secret at random, from its language's ordinary random
-source, out of its own built-in list of words. Each word is lowercase `a`–`z`
-and has at least two different letters, so no single letter wins alone. The
-game rules never see a random source: the shell picks the word and hands it to
-the core.
+The program picks the secret at random from its own built-in list of words, using
+the random number source a programmer in its language would usually reach for.
+Each word is lowercase `a`–`z` and has at least two different letters, so no
+single letter can win the game alone. The code that applies the rules never uses
+the random source: `main` picks the word and passes it in when it starts the
+game.
 
 ## 2. Playing
 
@@ -35,12 +41,15 @@ The program is played at a terminal, one guess per line, on stdin and stdout.
   word, and stops reading.
 - If input ends first, the program stops. It may show the word.
 
-The exit status is 0 whenever input is well formed UTF-8 text.
+The program exits with status 0 whenever its input is well-formed UTF-8 text.
 
-## 3. A session (one implementation)
+## 3. A sample session (the Python version)
 
-The Python version's shell prints this when it picks `jigsaw`; other
-implementations may word it their own way.
+The Python version prints this when it picks `jigsaw`. The C and Rust versions
+print the same lines for this session, but may word their output differently
+elsewhere, and read some other lines differently. For example, the Python and
+Rust versions ignore spaces around a guess, while the C version answers ` j `
+(with spaces) with the reminder.
 
 ```
 ______  wrong: 0/6
@@ -61,12 +70,12 @@ ji____  wrong: 1/6
 (`> ` marks the player's lines, which a terminal echoes; the program prints no
 prompt.)
 
-## 4. Fixed output
+## 4. What the shared tests check
 
-These are the only output facts every implementation keeps fixed; all other
-wording is each implementation's own:
-- When the game ends, one line contains the word `won` or the word `lost` (any
-  case) and ends with the secret word (trailing punctuation allowed). No other
-  line contains `won` or `lost`, apart from a secret shown as a line's last word.
-- Every guess line is answered: a line that is not one letter produces at least
-  one line of output.
+These are the only facts about the output that every version must share:
+- When the game ends, one line contains the word `won` or the word `lost` (in any
+  case) and ends with the secret word (punctuation after it is allowed). No other
+  line contains the word `won` or `lost` before its last word. (The last word of a
+  line is not checked, since it may be the secret.)
+- Every line the player types gets an answer: a line that is not one letter
+  produces at least one line of output.

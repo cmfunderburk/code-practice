@@ -59,7 +59,7 @@ static bool read_world(FILE *in, World *world, int *generations);
 `step` advances the world one generation in place. `read_world` reads one
 pattern from `in` and returns `false` for bad input.
 
-Differences from the Python implementation:
-- The world is a dense grid, not a set of live cells: C has no set type, and
-  the board is at most 100 × 100.
+Differences from the Python version:
+- The world is a dense grid of `bool`, not a set of live cells: C's standard
+  library has no set type, and the grid is at most 100 × 100.
 - `step` updates the grid in place instead of returning a new one.

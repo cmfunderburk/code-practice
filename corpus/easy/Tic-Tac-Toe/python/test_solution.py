@@ -39,7 +39,7 @@ def test_to_move_alternates(sub):
     assert sub.to_move(b) == "X"
 
 
-def test_play_is_pure(sub):
+def test_play_leaves_the_old_board_alone(sub):
     b0 = sub.EMPTY_BOARD
     b1 = sub.play(b0, 0)
     assert b0 == ("",) * 9          # original untouched
@@ -130,9 +130,9 @@ def test_main_threads_each_returned_board(sub, monkeypatch, capsys):
     ]
 
 
-def test_main_answers_bad_lines_and_lets_the_core_judge_cells(sub, monkeypatch, capsys):
-    # int() reads the line, spaces and all; the core rejects a cell off the
-    # board as it rejects a marked one.
+def test_main_answers_bad_lines_and_play_refuses_bad_cells(sub, monkeypatch, capsys):
+    # int() reads a line even with spaces around the number. play refuses a
+    # cell off the board the same way it refuses a marked one.
     _feed(monkeypatch, " 4 \n4\n9\n-1\nx\n0\n")
     sub.main()
     assert capsys.readouterr().out.splitlines() == [

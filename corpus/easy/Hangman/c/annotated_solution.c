@@ -79,7 +79,7 @@ static bool won(const Game *game) {
     return true;
 }
 
-// Python's `status(state) == "playing"`. Status is derived, never stored.
+// Python's `status(state) == "playing"`. Status is computed, never stored.
 static bool playing(const Game *game) { return !won(game) && wrong_count(game) < MAX_WRONG; }
 
 // Python's `masked` returns a new string. C writes into the caller's array;
@@ -106,7 +106,7 @@ int main(void) {
     // Seeded once per run, so each game picks its own word.
     srand((unsigned)time(nullptr));
     Game game = new_game(WORDS[(size_t)rand() % WORD_COUNT]);
-    // A guess fits; a longer line arrives in pieces, each one not a letter.
+    // A guess fits; a longer line arrives in pieces, answered one at a time.
     char line[64];
     while (playing(&game)) {
         char mask[SECRET_MAX + 1];

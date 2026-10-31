@@ -298,7 +298,7 @@ static bool read_line(char **line, size_t *capacity, size_t *len) {
 int main(void) {
     char *line = nullptr;
     size_t capacity = 0, len = 0;
-    // An empty line also ends the session, as in Python's shell.
+    // An empty line also ends the session, as in Python's `main`.
     while (read_line(&line, &capacity, &len) && len > 0) {
         Value value = {};
         const char *error = nullptr;

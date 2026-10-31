@@ -1,7 +1,7 @@
 // Game of Life: whole program.
 // From Python:
 // 1. Python stores the live cells as a `set` of `(r, c)` tuples. C has no set
-//    type, and the grid is at most 100 × 100, so this implementation stores one
+//    type, and the grid is at most 100 × 100, so this version stores one
 //    `bool` per cell: a dense grid.
 //    [approach]
 // 2. Python's `step` returns a new set. Here `step` updates the grid in place,
@@ -30,7 +30,8 @@ typedef struct {
     bool live[MAX_SIDE][MAX_SIDE];
 } World;
 
-// Python's `Counter` scatter. `counts` has a one-cell border on every side, so
+// Counts neighbors as Python's `Counter` does: each live cell adds one to each of
+// its eight neighbors. `counts` has a one-cell border on every side, so
 // cell (r, c) is counted at [r + 1][c + 1], and its neighbors at offsets 0..2.
 static void step(World *world) {
     // `= {}` zero-fills the whole array (C23).

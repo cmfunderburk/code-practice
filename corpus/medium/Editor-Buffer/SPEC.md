@@ -1,12 +1,17 @@
 # Editor Buffer — SPEC
 
-The editor every implementation builds, in any language. The Python version
-(`python/problem.md`) adds the API and the design. Each implementation is its
-language's natural program: how it words a refusal, how large a number it reads,
-and how it treats a `\r` or a non-ASCII digit are its own. The **buffer** (§1) is
-not: its text, counted in characters, and what `p` shows of it are the program's
-data, the same in every implementation. §5 fixes the few output facts all of them
-share.
+This document specifies a small text editor that keeps one buffer of text and
+unlimited undo and redo, and takes one command per line. There are three versions
+of it, in Python, C, and Rust, and each is written the way a programmer in that
+language would usually write it. All three must agree on the buffer (§1): its
+text, counted in characters, and what `p` shows of it. They may differ in how they
+word an error message and in which unusual lines they accept as commands, such as
+a number with a sign, a very large number, a non-ASCII digit, or a line ending in
+a carriage return (`\r`).
+
+The Python version's API is in `python/problem.md`. Each version has its own
+tests, and all three also run the shared tests in `test_program.py`, which check
+only the facts in §5.
 
 ## 1. The buffer
 
@@ -27,7 +32,7 @@ redo.
   not edits, so they don't clear it.
 - A refused command changes nothing: not the text, and not either history.
 
-## 2. Playing
+## 2. Using the program
 
 The program is used at a terminal, one command per line, on stdin and stdout. It
 prints no banner and no prompt.
@@ -57,14 +62,19 @@ exit status is 0 whenever input is well formed UTF-8 text.
 - A line that isn't a command, an edit §1 refuses, and an undo or redo with
   nothing to undo or redo are each answered with one line, and the session goes on.
 
-Which lines are commands beyond the plain forms above (a sign, leading zeros, a
-non-ASCII digit, a number past 32 bits, `U` for `u`, a trailing `\r`), and how a
-refusal is worded, is the implementation's choice.
+Each version decides for itself whether to accept lines beyond the plain forms
+above, such as a number with a sign or leading zeros, a non-ASCII digit, a number
+too large for 32 bits, `U` for `u`, or a line ending in `\r`, and how to word a
+refusal.
 
-## 4. A session (one implementation)
+## 4. A sample session (the Python version)
 
-The Python version's shell prints this; other implementations may word their
-refusals their own way.
+The Python version prints this, and the C and Rust versions print the same for
+these lines. They differ on some unusual lines. For example, the Rust version
+reads `i +0 x` as an insert at position 0, while the Python and C versions refuse
+it. And when a line ends in `\r\n` (a Windows-style line ending), the Rust version
+drops the `\r`, while the Python and C versions keep it as part of the line, so an
+insert puts it in the text.
 
 ```
 > i 0 hello
@@ -91,11 +101,11 @@ i <pos> <text> | d <pos> <n> | u | r | p | q
 (`> ` marks the user's lines, which a terminal echoes; the program prints no
 prompt.)
 
-## 5. Fixed output
+## 5. What the shared tests check
 
-These are the only output facts every implementation keeps fixed, for plain
-lines: numbers without signs or leading zeros, and nothing but spaces for
-whitespace. All other wording is each implementation's own.
+These are the only facts about the output that every version must share. The
+tests send only plain lines: numbers without signs or leading zeros, and no
+whitespace other than the space.
 - A `p` answer is exactly `"<text>"` (§3), the text character for character.
 - A successful edit, undo, or redo prints nothing.
 - Every other line before `q` is answered with exactly one line.

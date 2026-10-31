@@ -1,11 +1,13 @@
-"""Tic-Tac-Toe smoke suite: each language, run whole on stdin (SPEC §4).
+"""Tic-Tac-Toe shared tests: each version run as a whole program (SPEC §4).
 
-The tests use only the `run_program` fixture (`corpus/conftest.py`), which runs the
-program, in each language, on the given stdin and returns its stdout (asserting exit
-status 0). The board's picture and every answer's wording are the implementation's
-own, so only SPEC §4's outcome line is read. Expected outcomes come from `_oracle`,
-a plain replay of SPEC §1 over the cell numbers, never from an implementation under
-test. Exact game paths are each implementation's core tests.
+The Python, C, and Rust versions all run these tests. They use only the
+`run_program` fixture (`corpus/conftest.py`), which runs the program in each
+language with the given stdin, checks that it exits with status 0, and returns its
+stdout. The versions draw the board and word their messages differently, so only
+the outcome line that SPEC §4 fixes is read. The expected outcome comes from
+`_expected_outcome`, which replays the moves by the rules in SPEC §1; no code
+under test is used to compute an expected answer. Each version's own tests check
+its exact output.
 """
 
 import random
@@ -22,7 +24,7 @@ def _moves(*lines: object) -> str:
     return "".join(f"{line}\n" for line in lines)
 
 
-def _oracle(moves: list[int]) -> str | None:
+def _expected_outcome(moves: list[int]) -> str | None:
     """The outcome ("X", "O", or "draw") the moves reach, or None if undecided."""
     marks: dict[int, str] = {}
     for cell in moves:
@@ -51,7 +53,7 @@ def _outcome(out: str) -> str | None:
 def _plays(run_program, moves: list[int], *noise: object) -> None:
     """Play the moves, each followed by the noise lines, and check the outcome."""
     out = run_program(_moves(*(line for m in moves for line in (m, *noise))))
-    assert _outcome(out) == _oracle(moves), (moves, out[-500:])
+    assert _outcome(out) == _expected_outcome(moves), (moves, out[-500:])
 
 
 def test_every_line_wins_for_x(run_program):
@@ -72,7 +74,7 @@ def test_a_full_board_with_no_line_is_a_draw(run_program):
 def test_a_win_on_the_ninth_move_is_a_win_not_a_draw(run_program):
     # The last X fills the board and the 0-4-8 diagonal at once.
     moves = [0, 1, 2, 3, 4, 5, 7, 6, 8]
-    assert _oracle(moves) == "X"
+    assert _expected_outcome(moves) == "X"
     _plays(run_program, moves)
 
 
@@ -84,10 +86,11 @@ def test_random_games_follow_the_rules(run_program):
         _plays(run_program, cells)
 
 
-def test_rejected_lines_cost_nothing(run_program):
-    # Were a rejection to pass the turn, the marks would swap and the
-    # outcome would change.
-    # The first move's cell is marked from then on, so repeating it is noise.
+def test_a_rejected_line_keeps_the_turn(run_program):
+    # After each move, send lines that must be rejected: the first move's cell,
+    # which is marked from then on, and lines that are not legal moves. If a
+    # rejected line passed the turn, the marks would swap and the outcome would
+    # change.
     _plays(run_program, [0, 3, 1, 4, 2], 0, *_NOT_MOVES)
     _plays(run_program, [4, 0, 8, 2, 1, 7, 6, 3, 5], 4, "x")
 

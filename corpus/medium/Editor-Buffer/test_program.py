@@ -1,13 +1,15 @@
-"""Editor Buffer smoke suite: each language, run whole on stdin (SPEC §5).
+"""Editor Buffer shared tests: each version run as a whole program (SPEC §5).
 
-The tests use only the `run_program` fixture (`corpus/conftest.py`), which runs the
-program, in each language, on the given stdin and returns its stdout (asserting exit
-status 0). The buffer's text is the program's data, so a `p` answer is checked
-exactly; each implementation words its refusals its own way, so a refusal is checked
-only as one line. Expected answers come from `_oracle`, a plain simulation of SPEC
-§1–§3 that parses lines with regular expressions and keeps whole-text snapshots as
-its history, never from an implementation under test. Lines stay plain (SPEC §5): no
-signs, leading zeros, or whitespace but the space.
+The Python, C, and Rust versions all run these tests. They use only the
+`run_program` fixture (`corpus/conftest.py`), which runs the program in each
+language with the given stdin, checks that it exits with status 0, and returns its
+stdout. Every version must print the text exactly, so a `p` answer is compared
+character for character. The versions may word their error messages differently,
+so a refusal is checked only as one line. Expected answers come from `_oracle`, a
+separate, plain simulation of SPEC §1–§3 that parses lines with regular
+expressions and keeps a copy of the whole text as its history; no code under test
+is used to compute an expected answer. Every line sent is plain (SPEC §5): no
+signs, no leading zeros, and no whitespace other than the space.
 """
 
 import random
@@ -15,7 +17,7 @@ import re
 
 import pytest
 
-_REFUSED = None  # an answer line whose wording is the implementation's
+_REFUSED = None  # an answer line whose wording each version chooses
 
 _INSERT = re.compile(r"i ([0-9]+) (.*)", re.DOTALL)
 _DELETE = re.compile(r"d ([0-9]+) ([0-9]+)")

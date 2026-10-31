@@ -1,13 +1,16 @@
-"""Expression Calculator smoke suite: each language, run whole on stdin (SPEC §4).
+"""Expression Calculator shared tests: each version run as a whole program (SPEC §4).
 
-The tests use only the `run_program` fixture (`corpus/conftest.py`), which runs the
-program, in each language, on the given stdin and returns its stdout (asserting exit
-status 0). Each implementation prints numbers its own way, so a value line is read
-as the one number it contains and compared within nine significant digits; an error
-line is recognised by the word `error`. Random expressions are checked against
-`_oracle`, which walks Python's own `ast` of the text (its precedence matches SPEC
-§1's grammar) and skips any expression whose values grow past 10^12, where
-fixed-width implementations may legitimately overflow.
+The Python, C, and Rust versions all run these tests. They use only the
+`run_program` fixture (`corpus/conftest.py`), which runs the program in each
+language with the given stdin, checks that it exits with status 0, and returns its
+stdout. The versions print numbers differently, so a value line is checked only
+for the facts SPEC §4 fixes: it contains exactly one number, which must match the
+expected value to nine significant digits. An error line is recognised by the word
+`error`. The expected value of each random expression comes from `_value`, which
+walks the tree Python's own `ast` module parses from the text (Python's precedence
+matches SPEC §1's grammar); no code under test computes an expected answer.
+Expressions whose values grow past 10^12 are skipped, since the C and Rust
+versions may report those as overflow.
 """
 
 import ast
@@ -148,7 +151,7 @@ def test_end_of_input_ends_the_session(run_program):
     _assert_value(last, 6)
 
 
-def test_random_expressions_match_the_semantics(run_program):
+def test_random_expressions_get_the_right_values(run_program):
     rng = random.Random(2026)
     lines, expected = [], []
     while len(lines) < 200:

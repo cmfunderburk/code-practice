@@ -22,8 +22,9 @@
 // 6. Python's integers never overflow. Coordinates are `i64`, and `run` moves
 //    with `checked_mul` and `checked_add`, whose `None` the `?` operator passes
 //    up through `Option<()>` (Rust Book 9.2, "Where the ? Operator Can Be
-//    Used"). `execute` then rolls the whole line back, so an overflow is an
-//    error line rather than a debug-build panic. [integers]
+//    Used"). `execute` then undoes the whole line, so an overflow prints an
+//    error line instead of panicking, as unchecked arithmetic would in a debug
+//    build. [integers]
 // 7. Python's `input()` raises `EOFError` at end of input. `stdin().lines()`
 //    is an iterator that simply ends. [io]
 
@@ -101,8 +102,9 @@ fn positive(token: Option<&String>) -> Result<i64, String> {
     }
 }
 
-// One recursive call per `[`, as in Python; the shared iterator is the
-// position, so a nested block resumes its parent where it stopped.
+// One recursive call per `[`, as in Python. Every call shares one iterator,
+// which holds the position, so when a nested block returns, its parent goes
+// on from the word after the `]`.
 fn parse_block(
     tokens: &mut std::slice::Iter<String>,
     nested: bool,
@@ -210,7 +212,8 @@ fn main() {
     // UTF-8 is an `Err`, and `map_while` stops there, as at end of input.
     for line in io::stdin().lines().map_while(Result::ok) {
         let tokens = tokens(&line);
-        // UNDO is a line, not a command: only a line whose sole token it is.
+        // UNDO is not a command in the language: it undoes only as a line's
+        // only word.
         let result = if tokens == ["UNDO"] {
             logo.undo()
         } else {

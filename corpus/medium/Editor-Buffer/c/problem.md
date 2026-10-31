@@ -19,9 +19,9 @@ command per stdin line.
     nothing to do: one line.
 - No prompt and no banner. The session ends after `q` or at end of input.
 
-The editor is the program's `SPEC.md`. What `p` shows is the program's data,
-the same in every implementation; how a refusal is worded, and which odd lines
-(a sign, a huge number, a `\r`) are accepted, are each implementation's own.
+The editor is the program's `SPEC.md`. What `p` shows is the same in every
+version; how you word a refusal, and which unusual lines (a sign, a huge number, a
+`\r` at the end of a line) you accept, are up to you.
 
 ## A session
 
@@ -80,7 +80,7 @@ static Request parse(const char line[], size_t len);
 An `Editor` starts as `(Editor){}`. Each editor function returns `false` and
 changes nothing when it refuses.
 
-Differences from the Python implementation:
+Differences from the Python version:
 - Input is UTF-8 and positions count characters, so the program decodes what it
   inserts and encodes what it prints.
 - Lines can be any length, and the text can grow without limit.

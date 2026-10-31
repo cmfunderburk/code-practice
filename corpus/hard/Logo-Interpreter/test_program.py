@@ -1,16 +1,19 @@
-"""Logo Interpreter smoke suite: each language, run whole on stdin (SPEC §4).
+"""Logo Interpreter shared tests: each version run as a whole program (SPEC §4).
 
-The tests use only the `run_program` fixture (`corpus/conftest.py`), which runs the
-program, in each language, on the given stdin and returns its stdout (asserting exit
-status 0). Each implementation words its state line and its errors its own way, so
-an output is read as a list of answers: an error line (one containing `error`), or a
-report, whose state line is read only for its first two integers, x and y, and whose
-segment lines are compared exactly.
+The Python, C, and Rust versions all run these tests. They use only the
+`run_program` fixture (`corpus/conftest.py`), which runs the program in each
+language with the given stdin, checks that it exits with status 0, and returns its
+stdout. Each version may word its state line and its error messages its own way,
+so the output is read as a list of answers: an error line (one containing
+`error`), or a report, whose state line is read only for its first two integers,
+x and y, and whose segment lines are compared exactly.
 
-Sessions are checked against `_oracle`, a plain simulation of SPEC §1–§2 with its
-own tokenizer, parser, turtle, and snapshot history, never against an
-implementation under test. Inputs keep to what SPEC fixes: ASCII words, single
-spaces or tabs, and numbers as plain digits.
+The expected answers come from `_expected`, a separate small interpreter written
+from SPEC §1–§2, with its own tokenizer, parser, turtle, and history of saved
+states; no code under test is used to compute an expected answer. Every input
+keeps to what SPEC fixes for every version: ASCII words separated by spaces or
+tabs, and numbers as plain digits, apart from spellings that no version accepts as
+a count, such as `0`, `-2`, or `3.0`.
 """
 
 import random
@@ -94,7 +97,7 @@ def _run(commands: list, state: tuple) -> tuple:
     return x, y, heading, pen, segments
 
 
-def _oracle(lines: list[str]) -> list:
+def _expected(lines: list[str]) -> list:
     """The expected answers: "error", or (x, y, segments) for a report."""
     state, history, out = _START, [], []
     for line in lines:
@@ -139,7 +142,7 @@ def _stdin(lines: list[str]) -> str:
 
 
 def _check(run_program, lines: list[str]) -> None:
-    assert _answers(run_program(_stdin(lines))) == _oracle(lines), lines
+    assert _answers(run_program(_stdin(lines))) == _expected(lines), lines
 
 
 _EXAMPLE_IN = [
@@ -161,7 +164,7 @@ _EXAMPLE_ANSWERS = [
 
 
 def test_spec_example(run_program):
-    assert _oracle(_EXAMPLE_IN) == _EXAMPLE_ANSWERS
+    assert _expected(_EXAMPLE_IN) == _EXAMPLE_ANSWERS
     assert _answers(run_program(_stdin(_EXAMPLE_IN))) == _EXAMPLE_ANSWERS
 
 
@@ -200,7 +203,7 @@ def test_negative_coordinates_print_with_a_minus(run_program):
     ]
 
 
-def test_case_and_bracket_spacing_are_free(run_program):
+def test_case_and_bracket_spacing_do_not_matter(run_program):
     _check(run_program, ["repeat 2[forward 1 left repeat 2[forward 1 right]]",
                          "Repeat 3 [Forward 2 Left]", "UnDo", "\tFORWARD\t2\t"])
 

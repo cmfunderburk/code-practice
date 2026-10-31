@@ -65,7 +65,7 @@ fn render(board: Board) -> String // three rows, no trailing newline
 `play` returns the next board, or `Err` for a cell off the board, a marked cell,
 or a decided game.
 
-Differences from the Python implementation:
+Differences from the Python version:
 - A cell is `Option<Mark>`, not a string, and `winner` returns `Option<Mark>`.
 - No `legal_moves`: `play` checks the same conditions directly.
 - `play` returns `Result`, not a `ValueError`.

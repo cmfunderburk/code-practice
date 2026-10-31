@@ -2,21 +2,21 @@ title = "Game of Life"
 
 [[section]]
 symbols = ["imports"]
-cue = "What the program needs: stdin, and a counting dictionary."
+cue = "The imports: sys, to read stdin, and Counter from collections, to count each cell's live neighbours."
 
 [[section]]
 symbols = ["step"]
-cue = "Core: one generation on the set of live cells. One pass counts the eight neighbours of every live cell; keep a cell with 3, or 2 if it is already alive, clipped to the bounded grid. Returns a new set."
+cue = "One generation on the set of live (row, column) cells: with a Counter, add one to the count of each of the eight neighbours of every live cell. Keep a counted cell if its count is 3, or 2 and it is already live, and only if it lies inside the rows × cols grid. Return a new set."
 
 [[section]]
 symbols = ["parse_input"]
-cue = "SPEC §2 validation, read the Python way: splitlines, then map int over the split header into rows, cols, generations (any ValueError becomes one naming the header); check their ranges, then exactly rows grid lines of cols '#' or '.' characters. Returns rows, cols, generations, and the grid."
+cue = "Check the text against SPEC §2 and return rows, cols, generations, and the grid lines. Split it with splitlines (an empty input becomes one empty header line) and read the header with map(int, header.split()). Each failure raises ValueError with a message, which main prints: a header that is not three integers, \"header needs rows cols generations: {header!r}\"; rows or cols outside 1-100 or generations outside 0-1000, \"need 1-100 rows and cols, 0-1000 generations: {header!r}\"; the wrong number of grid lines, \"expected {rows} grid lines, got {len(grid)}\"; a line that is not cols characters of '#' or '.', \"row {r} must be {cols} of '#' or '.': {line!r}\"."
 
 [[section]]
 symbols = ["_render"]
-cue = "View: the board as rows of # and . joined by newlines."
+cue = "The board as text: rows lines of cols characters, '#' for a live cell and '.' for a dead one, joined by newlines."
 
 [[section]]
 name = "main"
 symbols = ["main", "__main__"]
-cue = "Composition root: parse all of stdin with sys.stdin.read() (print error: and stop if bad), build the live set from the grid, then print gen g and the rendered board for generations 0 through n, stepping before every frame but the first. Then the module guard."
+cue = "Read all of stdin with sys.stdin.read() and pass it to parse_input; if that raises ValueError, print \"error: <message>\" and stop. Otherwise build the set of live (row, column) cells from the grid's # characters, then for each generation g from 0 through generations print \"gen <g>\" and the board from _render, calling step before every generation except 0 and keeping the set it returns. Then the if __name__ == \"__main__\" guard."

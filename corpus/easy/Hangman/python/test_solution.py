@@ -54,7 +54,7 @@ def test_guess_after_win_raises(sub):
         sub.guess(state, "z")
 
 
-def test_purity_input_state_unchanged_and_repeatable(sub):
+def test_guess_leaves_its_input_alone_and_gives_the_same_result_twice(sub):
     state = sub.new_game("banana")
     once = sub.guess(state, "a")
     again = sub.guess(state, "a")
@@ -68,7 +68,7 @@ def _feed(monkeypatch, text: str) -> None:
 
 
 def _secret(monkeypatch, sub, word: str) -> None:
-    """Script the shell's pick; it must choose from the built-in WORDS."""
+    """Make random.choice return word; main must choose from the built-in WORDS."""
     def choice(seq):
         assert seq is sub.WORDS, "the secret is random.choice(WORDS)"
         return word
@@ -84,7 +84,7 @@ def test_words_are_lowercase_with_two_different_letters(sub):
         assert len(set(word)) >= 2, word
 
 
-def test_main_threads_returned_state_through_the_core(sub, monkeypatch, capsys):
+def test_main_passes_each_new_state_to_the_next_turn(sub, monkeypatch, capsys):
     initial = SimpleNamespace(max_wrong=6, secret="banana")
     after_guess = SimpleNamespace(max_wrong=6, secret="banana")
     calls: list[tuple[str, object]] = []

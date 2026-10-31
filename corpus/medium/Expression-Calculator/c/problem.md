@@ -10,17 +10,18 @@ factor := '-' factor | '(' expr ')' | INT
 INT    := one or more ASCII digits
 ```
 
-- Spaces and tabs between tokens are ignored. Binary operators are
-  left-associative, and unary minus nests (`--3` is 3).
+- Spaces and tabs around the numbers and symbols are ignored. Binary operators
+  group from the left (`20-5-3` is `(20-5)-3`), and unary minus can be repeated
+  (`--3` is 3).
 - `+`, `-`, `*`, and negation on integers give the exact integer; `/` is true
-  division (`7/2` is 3.5). How large an integer may grow, and how a fraction
-  prints, are the port's own.
+  division (`7/2` is 3.5). How large an integer may grow, and how a non-whole
+  number prints, are yours.
 - A line outside the grammar, or one that divides by zero, is answered with a
   line containing `error`, and the session continues.
 - A value line holds the one number it computed, in decimal or exponent
   notation.
 
-The calculator is the program's `SPEC.md`. Wording is the port's own; only the
+The calculator is the program's `SPEC.md`. Wording is yours; only the
 value and error lines' shape is fixed.
 
 ## A session
@@ -59,7 +60,8 @@ static bool calculate(const char *text, size_t len, Value *result, const char **
 overflow `int64_t` is an error, not undefined behavior.
 
 Differences from the Python version:
-- `tokenize`, `parse`, and `evaluate` take the port's own shape; only
-  `calculate`'s signature is fixed.
+- `tokenize`, `parse`, and `evaluate` are yours to shape; only `calculate`'s
+  signature is fixed.
 - Integers are `int64_t`, not unbounded: overflow is reported as an error.
-- Floats print with `printf("%.15g")`, not Python's shortest round-trip text.
+- Floats print with `printf("%.15g")`, not as Python's shortest text that reads
+  back as the same number: `1/3` prints `0.333333333333333`.

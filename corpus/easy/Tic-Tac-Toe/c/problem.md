@@ -66,8 +66,10 @@ static bool cell_of(const char line[], int *pos); // a line's cell, 0-8
 `false` for a cell off the board, a marked cell, or a decided game. `Board
 board = {}` is the empty board.
 
-Differences from the Python implementation:
+Differences from the Python version:
 - No `legal_moves`: `play` checks the same conditions directly.
 - `winner` returns `'\0'` rather than `None`, and `play` reports an illegal move
   by returning `false`, not by raising.
 - `render` prints the board rather than returning a string.
+- `cell_of` refuses a number outside 0 to 8 as not a cell, where Python's `main`
+  passes any number to `play`.

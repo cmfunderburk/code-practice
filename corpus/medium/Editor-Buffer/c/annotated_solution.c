@@ -5,8 +5,8 @@
 //    inserts or removed. `apply` switches on the tag, and `inverse` flips it,
 //    which is all Python's two `invert` methods do. [approach]
 // 2. Python's `Delete` keeps the removed text so it can be undone, and C does
-//    the same: `editor_delete` copies the doomed characters into the command
-//    before `perform` cuts them out. [approach]
+//    the same: `editor_delete` copies the characters it is about to remove into
+//    the command before `perform` cuts them out. [approach]
 // 3. Python's `str` is a sequence of code points, so `text[:pos]` counts
 //    characters for free. C decodes each inserted line from UTF-8 into
 //    `char32_t` code points, so a position indexes the array directly, and
@@ -18,7 +18,7 @@
 //    redo stacks by struct copy, so exactly one stack holds it at a time, and
 //    `clear` frees the arrays of the redo history it drops. Python's garbage
 //    collector does this for `self._redo.clear()`. [types]
-// 6. Python raises `ValueError` with the message, and the shell prints it. C's
+// 6. Python raises `ValueError` with the message, and `main` prints it. C's
 //    editor functions return `false`, and `main` writes the message for the
 //    verb it ran. [errors]
 // 7. Python's `str.partition` and `split(" ")` build new strings. `parse`
@@ -106,7 +106,7 @@ static void reserve(Text *text, size_t needed) {
 
 // The lead byte says how many continuation bytes follow; each adds six
 // bits. There is no validation: bytes that aren't UTF-8 decode to whatever
-// code points they spell, which SPEC leaves to each implementation.
+// code points they spell. SPEC does not say what to do with such input.
 static void decode(const char bytes[], size_t len, Text *out) {
     for (size_t i = 0; i < len;) {
         unsigned char lead = (unsigned char)bytes[i++];

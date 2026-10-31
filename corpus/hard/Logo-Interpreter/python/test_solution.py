@@ -9,7 +9,7 @@ def snapshot(logo):
     return logo.position, logo.heading, logo.pen_down, logo.segments
 
 
-def test_square_is_hand_computed_and_repeat_is_atomic(sub):
+def test_a_square_is_one_repeat_and_one_undo_entry(sub):
     logo = sub.Logo()
     logo.execute("REPEAT 4 [ FORWARD 2 LEFT ]")
     assert snapshot(logo) == (
@@ -38,7 +38,7 @@ def test_each_top_level_command_is_one_history_entry(sub):
     assert snapshot(logo) == ((0, 0), "E", True, ())
 
 
-def test_pen_state_moves_without_drawing(sub):
+def test_the_pen_up_moves_without_drawing(sub):
     logo = sub.Logo()
     logo.execute("PENUP FORWARD 3 LEFT FORWARD 2 PENDOWN RIGHT FORWARD 1")
     assert logo.position == (4, 2)
@@ -58,7 +58,7 @@ def test_nested_repeat_and_case_insensitive_source(sub):
     assert len(logo.segments) == 6
 
 
-def test_parse_render_round_trip_is_canonical(sub):
+def test_render_writes_uppercase_with_single_spaces_and_parses_back(sub):
     source = "repeat 2[forward 3 left repeat 4 [ penup right ]] pendown"
     program = sub.parse(source)
     rendered = sub.render(program)
@@ -72,7 +72,7 @@ def test_parse_render_round_trip_is_canonical(sub):
     "FORWARD", "FORWARD 0", "FORWARD -2", "FORWARD nope", "SPIN",
     "]", "REPEAT 2 FORWARD 1", "REPEAT 0 [ LEFT ]", "REPEAT 2 [ LEFT",
 ])
-def test_bad_source_is_atomic(sub, bad):
+def test_a_bad_line_changes_nothing_and_adds_no_history(sub, bad):
     logo = sub.Logo()
     logo.execute("FORWARD 2")
     before = snapshot(logo)
@@ -83,7 +83,7 @@ def test_bad_source_is_atomic(sub, bad):
     assert logo.position == (0, 0)
 
 
-def test_commands_are_values_with_pure_apply_and_inverse(sub):
+def test_apply_returns_a_new_drawing_and_inverse_restores_the_old_one(sub):
     command = sub.parse("FORWARD 3")[0]
     before = sub.Drawing()
     first = command.apply(before)
@@ -148,7 +148,7 @@ def _program(rng, depth):
     return result
 
 
-def test_seeded_program_sweep_against_flat_interpreter(sub):
+def test_random_programs_match_a_simple_reference_interpreter(sub):
     rng = random.Random(20260710)
     for _ in range(100):
         program = _program(rng, 2)
@@ -164,7 +164,7 @@ def _feed(monkeypatch, text: str) -> None:
     monkeypatch.setattr(sys, "stdin", io.StringIO(text))
 
 
-def test_main_reports_each_line_in_the_python_wording(sub, monkeypatch, capsys):
+def test_main_prints_the_python_versions_reports_and_errors(sub, monkeypatch, capsys):
     _feed(monkeypatch, "FORWARD 2 LEFT\nSPIN\nundo\n\nUNDO\nUNDO\n")
     sub.main()
     assert capsys.readouterr().out.splitlines() == [

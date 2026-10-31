@@ -10,17 +10,18 @@ factor := '-' factor | '(' expr ')' | INT
 INT    := one or more ASCII digits
 ```
 
-- Spaces and tabs between tokens are ignored. Binary operators are
-  left-associative, and unary minus nests (`--3` is 3).
+- Spaces and tabs around the numbers and symbols are ignored. Binary operators
+  group from the left (`20-5-3` is `(20-5)-3`), and unary minus can be repeated
+  (`--3` is 3).
 - `+`, `-`, `*`, and negation on integers give the exact integer; `/` is true
-  division (`7/2` is 3.5). How large an integer may grow, and how a fraction
-  prints, are the port's own.
+  division (`7/2` is 3.5). How large an integer may grow, and how a non-whole
+  number prints, are yours.
 - A line outside the grammar, or one that divides by zero, is answered with a
   line containing `error`, and the session continues.
 - A value line holds the one number it computed, in decimal or exponent
   notation.
 
-The calculator is the program's `SPEC.md`. Wording is the port's own; only the
+The calculator is the program's `SPEC.md`. Wording is yours; only the
 value and error lines' shape is fixed.
 
 ## A session
@@ -55,9 +56,10 @@ fn calculate(text: &str) -> Result<Value, String>
 Integer arithmetic that would overflow `i64` is an `Err`, not a panic.
 
 Differences from the Python version:
-- `tokenize`, `parse`, and `evaluate` take the port's own shape; only
-  `calculate`'s signature is fixed.
+- `tokenize`, `parse`, and `evaluate` are yours to shape; only `calculate`'s
+  signature is fixed.
 - Integers are `i64`, not unbounded: overflow is an `Err`.
 - Every stage returns `Result<_, String>` instead of raising.
-- Values print with `Display`: an `f64` shows its shortest round-trip text, and
-  a whole-number float prints without `.0` (`8/2` shows `4`).
+- Values print with `Display`: an `f64` shows the shortest text that reads back
+  as the same number, as in Python, but a whole-number float prints without `.0`
+  (`8/2` shows `4`), and no float prints in exponent notation.

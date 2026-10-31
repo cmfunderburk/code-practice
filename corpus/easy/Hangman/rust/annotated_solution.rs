@@ -12,9 +12,9 @@
 //    "Generating a Random Number"). [library]
 // 5. Python's `input()` raising `EOFError` becomes `lines.next()` returning
 //    `None`; a line that isn't UTF-8 comes back as `Some(Err(_))`. [io]
-// 6. Python's shell filters a bad line inline. Here `letter_of` returns
-//    `Option`, and `let…else` handles the absent case first (Rust Book 6.3).
-//    [absence]
+// 6. Python's `main` checks for one letter inside its loop. Here `letter_of`
+//    returns `Option`, and `let…else` handles the absent case first (Rust Book
+//    6.3). [absence]
 
 // Python's `frozenset` of guesses, as an ordered set (std: BTreeSet).
 use std::collections::BTreeSet;

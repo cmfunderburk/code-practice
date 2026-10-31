@@ -1,10 +1,11 @@
 # Tic-Tac-Toe — Board Predicates
 
-The Tic-Tac-Toe rules core (no AI, no I/O). A board has 9 cells indexed 0–8
-row-major; `"X"` always moves first and turns alternate. A player wins by
-filling any row, column, or diagonal; a full board with no winner is a draw.
-Illegal moves — occupied cell, out-of-range index, or any move after the game
-is decided — raise `ValueError`.
+The rules of Tic-Tac-Toe, written as functions over a board, and a `main` that
+lets two people play at one terminal (there is no computer player). A board has
+9 cells numbered 0 to 8, row by row. `"X"` always moves first, and the turns
+alternate. A player wins by filling any row, column, or diagonal; a full board
+with no winner is a draw. An illegal move (an occupied cell, a number outside
+0 to 8, or any move after the game is won) raises `ValueError`.
 
 ## Examples
 
@@ -17,20 +18,20 @@ Constraints: positions are ints 0–8.
 
 ## Board Predicates
 
-The board is an immutable `tuple[str, ...]` of 9 cells (`"X"`, `"O"`, or
-`""`), and the rules are pure functions over it:
-`to_move(board) -> str` (derived from the piece counts),
-`winner(board) -> str | None`, `is_draw(board) -> bool`,
-`legal_moves(board) -> tuple[int, ...]` (empty once the game is decided), and
-`play(board, pos) -> tuple[str, ...]` returning a NEW board and raising
-`ValueError` on illegal moves. `EMPTY_BOARD` is the starting board.
+The board is a tuple of 9 cells (`"X"`, `"O"`, or `""`), and the rules are
+functions that take a board and change nothing: `to_move(board) -> str` (worked
+out from the number of marks), `winner(board) -> str | None`,
+`is_draw(board) -> bool`, `legal_moves(board) -> tuple[int, ...]` (empty once
+someone has won), and `play(board, pos) -> tuple[str, ...]`, which returns a NEW
+board and raises `ValueError` on an illegal move. `EMPTY_BOARD` is the starting
+board.
 
-`_render` draws the board, and the value-threading `main()` is the composition
-root, called under the module guard. `main()` starts from `EMPTY_BOARD`. While
-the game is undecided, it prints the rendered board and `<mover> to move`, then
-reads a line with `input()`; at end of input it prints `game abandoned` and
-returns. A line `int()` can't read gets `a cell 0-8, please`; any number goes to
-`play`, whose `ValueError` (a marked cell, or one off the board) is printed as
-is. Otherwise it retains the new value with `board = play(board, pos)`. When the
-game is decided, it renders the final board and prints either the winner or
-`draw`. The game itself is `SPEC.md`.
+`_render` turns a board into text, and `main()` runs the game, called under
+`if __name__ == "__main__":`. `main()` starts from `EMPTY_BOARD`. While the game
+is not over, it prints the rendered board and `<mover> to move`, then reads a
+line with `input()`; at end of input it prints `game abandoned` and returns. A
+line `int()` can't read gets `a cell 0-8, please`; any number goes to `play`,
+whose `ValueError` (a marked cell, or one off the board) is printed as it is.
+Otherwise `main` keeps the new board with `board = play(board, pos)`. When the
+game is over, it prints the final board and then the winner (`X wins!` or
+`O wins!`) or `draw`. The full behavior is in `SPEC.md`.

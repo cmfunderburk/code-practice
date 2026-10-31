@@ -1,56 +1,87 @@
-## Functional Core — worked example
+## How it works
 
-**Intuition.** Hangman's entire state is three values: the secret, the set
-of guessed letters, the budget. Everything else — the mask, the miss count,
-won/lost — is DERIVED, so the natural implementation stores nothing it
-can compute: `HangmanState` is a frozen value, `guess` returns a new state,
-and `status`/`masked`/`wrong_count` are pure views. Nothing can ever
-disagree with anything, and the purity check (`guess` twice from one state,
-equal results, input untouched) is only expressible in this implementation.
-The guards stay: illegal transitions (repeat letter, game over) raise
-`ValueError` — a terminal guard, enforced in a pure function.
+The whole state of a Hangman game is three values: the secret word, the set of
+letters guessed so far, and the number of misses allowed. `HangmanState` is a
+frozen dataclass holding exactly those three. Everything else the player sees is
+computed from them when it is needed:
+- `masked` writes the secret with `_` for each letter not yet guessed;
+- `wrong_count` counts the guessed letters that are not in the secret;
+- `status` returns `"won"` once every letter of the secret is guessed, `"lost"`
+  once the misses reach `max_wrong`, and `"playing"` otherwise. It checks for a win
+  first.
 
-Worked check: `"banana"` after guesses a, x, n → masked `"_anana"`, one
-wrong, still playing; then b → `"banana"`, won.
+`guess` refuses a guess after the game has ended, or a letter already guessed, by
+raising `ValueError`. Otherwise it returns a new state with the letter added, and
+leaves the state it was given unchanged.
 
-**Complexity.**
-- Time: $O(n)$ over the secret per view; Space: $O(g)$ guessed letters per
-  state.
+Worked check: `"banana"` after guesses a, x, n → masked `"_anana"`, one wrong,
+still playing; then b → `"banana"`, won.
 
-**Discussed, not drilled.** `dataclasses.replace(state, guessed=...)` would
-do the copy; spelling the constructor out keeps all three fields visible at
-this size. An OO version stores `status` and must flip it at exactly the
-right moment — an ordering obligation that simply doesn't exist here.
+**Complexity.** `masked`, `wrong_count`, and `status` each take time $O(n)$ for a
+secret of $n$ letters (at most 26 letters can be guessed). Each state holds at
+most 26 guessed letters.
 
-**The drilled composition root.** `main()` owns everything effectful: it picks the
-secret with `random.choice(WORDS)`, reads each guess with `input()`, filters junk
-lines itself, and catches the core's `ValueError` to report repeats. The state is transparent: the shell reads
-`state.max_wrong` straight off the value, where an OO shell would talk to an
-encapsulated machine. The important line is `state = guess(...)`. The shell must
-retain the returned value and explicitly thread it into the next turn.
+**Checking `guess`.** Because `guess` returns a new value instead of changing the
+one it was given, a test can call it twice on the same state and compare.
+`test_guess_leaves_its_input_alone_and_gives_the_same_result_twice` does exactly
+that: both calls must return equal states, and the original state must still have
+nothing guessed.
 
-## Shapes chosen and rejected
+## `main`
 
-- **Functional core (chosen)** over an **OO state machine**. An OO version
-  stores `status` and must flip it at exactly the right moment inside `guess`.
-  Here status is derived on demand, so no field can disagree with the guesses.
-- **The shell picks the word with `random.choice`.** Taking the secret from the
-  first stdin line instead would let one exact transcript cover Python, C, and
-  Rust alike, but it teaches porting byte for byte rather than how each language
-  writes Hangman: each implementation picks from its own word list with its own
-  random source. The core doesn't care, because `new_game` is handed the secret;
-  only the shell's source of it would change.
-- **A word list with two different letters per word.** A one-letter word such as
-  `aaa` would let a single guess win; ruling it out means a game is still going
-  when its first guess is repeated.
-- **Line-by-line reading.** The shell reads one line per turn rather than all of
-  stdin at once, so a person can play at a terminal. Reading everything up front
-  would wait for end of input before printing the first status line.
+`main()` does everything that touches the outside world. It picks the secret with
+`random.choice(WORDS)` and creates the first state with `new_game`. Each turn it
+prints `<mask>  wrong: <misses>/<max_wrong>`, reading `max_wrong` straight from the
+state, then reads a line with `input()`, removes surrounding spaces, and converts
+it to lowercase. A line that is not one letter `a`–`z` gets
+`one letter a-z, please`. A letter goes to `guess`; if `guess` raises
+`ValueError`, `main` prints the message and keeps the old state. At end of input
+it prints `you quit! the word was <secret>` and returns. When the game ends it
+prints `you won! the word was <secret>` or `you lost! the word was <secret>`.
 
-## Scales up to
+The most important line is `state = guess(state, letter)`. `guess` changes
+nothing, so if `main` called it without keeping the result, every guess would be
+thrown away and the game would never move on.
 
-The functional core / imperative shell split is the skeleton of most larger
-programs. The nearest here is Game of Life (`corpus/medium/Game-of-Life`): a pure
-`step`, with all I/O in `main`. The turn loop is a small version of a Lisp REPL,
-which reads stdin line by line in one persistent session and ends at end of input.
-It threads an environment where this loop threads a `HangmanState`.
+## Design choices
+
+- **Computing the status instead of storing it.** A `status` field would be a
+  second record of what `guessed` already decides, and `guess` would have to
+  update it at exactly the right moment, after adding the letter. Because the
+  function `status` computes the answer from the fields each time, nothing can
+  disagree with the guesses.
+- **A new state for every guess.** An object that added letters to its own set
+  would do the same job with one object. With a frozen value, `main` must assign
+  the result of every `guess`, but every old state stays valid, so a test can
+  call `guess` twice on the same state and compare the results. `guess` writes
+  out the constructor call,
+  `HangmanState(state.secret, state.guessed | {letter}, state.max_wrong)`.
+  `dataclasses.replace(state, guessed=...)` would make the same copy; with only
+  three fields, writing them out keeps all three in view.
+- **Only `main` picks the word.** `main` picks it with `random.choice` and passes
+  it to `new_game`, so every other function can be tested with a known word and no
+  randomness. The tests of `main` replace `random.choice` with a function that
+  returns a chosen word. Reading the word from input instead would let one exact
+  transcript test the whole program, but nobody could play it alone.
+- **Words with at least two different letters.** A word such as `aaa` would let a
+  single guess win. Ruling it out lets the shared tests check that one letter
+  guessed many times never ends a game.
+- **Reading one line at a time.** `main` reads one line per turn rather than all
+  of stdin at once, so a person can play at a terminal. Reading everything first
+  would mean no guess got an answer until input ended.
+
+## Where this shows up again
+
+Splitting a program into functions that only compute (here `new_game`, `guess`,
+`masked`, `wrong_count`, and `status`) and one function that does all the input,
+output, and random choices (here `main`) is a common design. It is often called
+*functional core, imperative shell*. Two larger examples:
+
+- A Game of Life program can compute each generation with a function that takes a
+  set of live cells and returns a new set, and keep all file reading, terminal
+  output, and waiting between frames in `main`. Then every rule can be tested by
+  comparing sets, with no terminal involved.
+- An interactive interpreter, such as the `>>>` prompt of `python3`, has a REPL, a
+  read-evaluate-print loop, that reads one line at a time in one session and stops
+  at end of input, as `main` does here. It carries the definitions made so far from
+  one line to the next, where this loop carries a `HangmanState`.

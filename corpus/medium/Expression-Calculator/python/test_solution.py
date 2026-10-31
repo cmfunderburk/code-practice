@@ -6,7 +6,7 @@ import pytest
 
 
 def _random_expr(rng: random.Random, depth: int) -> str:
-    """Random well-formed expression text; Python's eval is the oracle."""
+    """Random well-formed expression text, to compare calculate with Python's eval."""
     if depth == 0 or rng.random() < 0.3:
         return str(rng.randint(0, 99))
     kind = rng.randrange(6)
@@ -73,9 +73,9 @@ def test_zero_division_propagates(sub):
         sub.calculate("1/0")
 
 
-def test_seeded_sweep_matches_python_eval(sub):
-    # the displaced built-in is the oracle: same grammar, same precedence,
-    # same operator semantics -> exactly equal results, types included
+def test_random_expressions_match_python_eval(sub):
+    # Python's eval uses the same grammar, precedence, and operators, so calculate
+    # must return exactly what eval returns, int or float included.
     rng = random.Random(2026)
     checked = 0
     while checked < 200:
@@ -106,7 +106,7 @@ def test_parse_builds_the_tuple_ast(sub):
 def test_evaluate_hand_built_nodes(sub):
     node = ("*", ("num", 6), ("neg", ("num", 7)))
     assert sub.evaluate(node) == -42
-    assert sub.evaluate(node) == -42  # pure: same node, same answer, no state
+    assert sub.evaluate(node) == -42  # evaluate keeps no state: the same tree gives the same answer
 
 
 def _feed(monkeypatch, text: str) -> None:

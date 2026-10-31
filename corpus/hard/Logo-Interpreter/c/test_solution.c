@@ -54,7 +54,7 @@ int main(void) {
     assert(logo_undo(&logo) && at(3, 2, 'E', true, 0));
     reset();
 
-    // Case, bracket spacing, and whitespace are free; blocks nest and may be empty.
+    // Case, bracket spacing, and whitespace do not matter; blocks nest and may be empty.
     assert(execute("repeat 2[forward 1 left repeat 2[forward 1 right]]"));
     assert(at(3, -1, 'W', true, 6));
     assert(execute("\tREPEAT 3 [ ]\r") && logo.undo_len == 2 && at(3, -1, 'W', true, 6));

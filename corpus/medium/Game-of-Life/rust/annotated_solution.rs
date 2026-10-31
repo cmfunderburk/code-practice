@@ -1,8 +1,8 @@
 //! Game of Life: whole program.
 // From Python:
-// 1. Live cells stay a set and the step stays a `Counter` scatter, as in Python:
-//    `HashSet` and `HashMap` are in the standard library. The C port, which has
-//    neither, stores a dense grid. [library]
+// 1. Live cells stay a set, and the step counts neighbors as Python's `Counter`
+//    does: `HashSet` and `HashMap` are in the standard library. The C version, which
+//    has neither, stores a dense grid. [library]
 // 2. Coordinates are `usize`, which can't be negative. A neighbor above row 0
 //    or left of column 0 is dropped as it is made, and the final filter clips
 //    only the bottom and right edges. [integers]

@@ -2,54 +2,54 @@ title = "Logo Interpreter"
 
 [[section]]
 symbols = ["imports"]
-cue = "What the program needs: postponed annotations (a command refers to its own type) and a decorator for an immutable record."
+cue = "What the program needs: from __future__ import annotations, so that Command can name its own type in its fields, and dataclass, for the frozen records."
 
 [[section]]
 name = "headings"
 symbols = ["VECTORS", "HEADINGS"]
-cue = "The four unit steps and their compass letters, both in counter-clockwise order from east, so a heading is an index 0-3 and a left turn adds one."
+cue = "The four unit steps (east, north, west, south) and their letters \"ENWS\", both in counterclockwise order from east, so a heading is an index from 0 to 3 and a left turn adds 1."
 
 [[section]]
 symbols = ["Drawing"]
-cue = "Core state as one immutable value: position, heading index, pen flag, and the tuple of segments drawn. Every field defaults to the start: origin, east, pen down, nothing drawn."
+cue = "Everything the user can see, as one frozen dataclass: the turtle's position, its heading as an index into HEADINGS, whether the pen is down, and the tuple of segments drawn so far. The defaults are the starting state: (0, 0), heading east, pen down, no segments."
 
 [[section]]
 symbols = ["Command"]
-cue = "Command object: an op name and its argument (a distance, a (count, body) pair for repeat, or nothing). Applying it to a drawing returns a new drawing: forward moves and appends a segment only while the pen is down, left/right turn by one index mod 4, penup/pendown set the flag, repeat applies the body count times; any other op is a ValueError. Its inverse, given the drawing before, is a restore of that drawing."
+cue = "A frozen dataclass for one parsed command: an op name and its argument (a distance for forward, a (count, body) pair for repeat, None for the rest). apply(drawing) returns a new drawing: forward moves by the heading's step times the distance and adds a segment only when the pen is down; left adds 1 to the heading and right subtracts 1, mod 4; penup and pendown set the pen; repeat applies each command of the body in turn, count times. Any other op raises ValueError(\"unknown command: <op>\"). inverse(before) returns Restore(before)."
 
 [[section]]
 symbols = ["Restore"]
-cue = "The inverse command: holds a drawing, and applying it ignores the current drawing and returns the held one."
+cue = "Undoes a command: holds the drawing from before it, and its apply ignores the drawing passed to it and returns the held one."
 
 [[section]]
 symbols = ["_positive"]
-cue = "Parser helper: a count or distance token as an int. ValueError showing the token if it is not an integer, and a separate ValueError if it is below 1."
+cue = "Reads a count or distance with int(). If int() fails, raise ValueError(\"expected a positive integer, got <token>\"), with the token shown by repr; if the value is below 1, raise ValueError(\"counts and distances must be positive\")."
 
 [[section]]
 symbols = ["_parse"]
-cue = "Recursive-descent parser over uppercase tokens from a position, flagged as nested or not. ] closes a nested block (unexpected at top level); FORWARD needs a distance; the four bare words become lowercase ops; REPEAT needs a count then [ and recurses for its body; anything else is an unknown command. Running out inside a block is missing ]. Returns the commands and the new position."
+cue = "Parses uppercase words starting at a position, with a flag saying whether it is inside a block, and returns the tuple of commands and the next position. A ] ends a block, or raises \"unexpected ]\" outside one. FORWARD needs a distance after it (\"FORWARD needs a distance\"). LEFT, RIGHT, PENUP, and PENDOWN become commands with lowercase op names. REPEAT needs a count followed by [ (\"REPEAT needs a count and [ block ]\"), then calls itself to read the block. Any other word raises \"unknown command: <word>\". Running out of words inside a block raises \"missing ]\"."
 
 [[section]]
 symbols = ["parse"]
-cue = "Entry: pad brackets with spaces, uppercase, split on whitespace, and parse from position 0 at top level."
+cue = "Puts spaces around [ and ], converts to uppercase, splits on whitespace, and parses the words from position 0, outside any block; returns just the commands."
 
 [[section]]
 symbols = ["render"]
-cue = "The parser's inverse: canonical uppercase source with single spaces. FORWARD n, REPEAT n [ body ] with the body rendered recursively, and other ops as their uppercase names."
+cue = "Turns parsed commands back into source, words joined by single spaces: FORWARD n, REPEAT n [ <body, rendered the same way> ], and every other command as its op name in uppercase."
 
 [[section]]
 symbols = ["Logo"]
-cue = "Engine: holds the current drawing and an undo stack. Read-only properties expose position, heading as its letter, pen flag, and segments. Executing parses all the source first (so bad source changes nothing), then applies each top-level command, pushing its inverse against the drawing before. Undo pops and applies one inverse; ValueError when there is nothing to undo."
+cue = "Holds the current drawing, starting from Drawing(), and a list of Restores used as an undo stack. Read-only properties give position, heading as its letter from HEADINGS, pen_down, and segments. execute parses the whole source first, so a bad line changes nothing; then, for each top-level command, it applies the command and pushes the command's inverse of the drawing from before. undo raises ValueError(\"nothing to undo\") when the stack is empty; otherwise it pops a Restore and applies it."
 
 [[section]]
 symbols = ["_is_undo"]
-cue = "Shell helper: a line is an undo when its only word is UNDO, in any case."
+cue = "True when the line's only word, in uppercase, is UNDO."
 
 [[section]]
 symbols = ["_report"]
-cue = "Shell helper: the state line x=X y=Y heading=H pen=down|up segments=N, then the drawing, one line x1,y1 -> x2,y2 per segment, oldest first, joined by newlines."
+cue = "Builds the text printed after a successful line: the state line \"x=<x> y=<y> heading=<letter> pen=down|up segments=<count>\", then one line \"<x1>,<y1> -> <x2>,<y2>\" per segment, oldest first, joined with newlines."
 
 [[section]]
 name = "main"
 symbols = ["main", "__main__"]
-cue = "Composition root: one interpreter; read lines with input() until end of input, undo or execute each, printing error: for a ValueError and the report otherwise. Then the module guard."
+cue = "The program's loop: make one Logo, then read lines with input() until end of input. A line that _is_undo accepts calls undo; every other line, an empty one included, goes to execute. On ValueError print \"error: <message>\"; otherwise print the report. Then the if __name__ == \"__main__\" guard."

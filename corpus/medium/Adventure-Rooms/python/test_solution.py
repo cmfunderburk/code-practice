@@ -20,7 +20,7 @@ HALL = ("You are in a dusty entrance hall.\n"
         "You see: lamp.")
 
 
-def test_look_golden(sub):
+def test_look_describes_the_starting_hall(sub):
     _, outs = run(sub, ["look"])
     assert outs == [HALL]
 
@@ -94,7 +94,7 @@ def test_two_games_are_independent(sub):
     assert outs == [HALL]
 
 
-def test_dispatch_consults_the_table_at_call_time(sub):
+def test_execute_finds_a_verb_added_to_verbs_at_run_time(sub):
     def xyzzy(state, arg):
         return state, "Nothing happens."
 
@@ -107,7 +107,7 @@ def _feed(monkeypatch, text: str) -> None:
     monkeypatch.setattr(sys, "stdin", io.StringIO(text))
 
 
-def test_main_threads_successful_state_after_a_nonmutating_error(
+def test_main_uses_each_returned_state_and_keeps_the_old_one_after_an_error(
         sub, monkeypatch, capsys):
     initial = {"over": False, "name": "initial"}
     middle = {"over": False, "name": "middle"}
@@ -165,7 +165,7 @@ def test_main_ends_silently_at_end_of_input(sub, monkeypatch, capsys):
     assert capsys.readouterr().out == HALL + "\nTaken.\n"
 
 
-def test_main_prints_the_python_wording(sub, monkeypatch, capsys):
+def test_main_prints_the_python_versions_messages(sub, monkeypatch, capsys):
     _feed(monkeypatch, "take lamp\ngo north\ntake sword\ndance\ninventory\nquit\nlook\n")
     sub.main()
     assert capsys.readouterr().out == HALL + """

@@ -14,7 +14,8 @@
 //    line that isn't UTF-8 ends the session too. [io]
 // 5. Python's `print` of a float becomes `Display`, which also prints the
 //    shortest text that reads back to the same float, but shows `8/2` as `4`
-//    where Python shows `4.0`. [text]
+//    where Python shows `4.0`, and never switches to exponent notation: Python's
+//    `1e+24` prints as all 25 digits. [text]
 
 use std::io;
 
@@ -196,7 +197,7 @@ fn main() {
     // `map_while(Result::ok)` stops at the first read error, such as a line that
     // isn't UTF-8, as end of input does.
     let lines = io::stdin().lines().map_while(Result::ok);
-    // An empty line ends the session, as in Python's shell.
+    // An empty line ends the session, as in Python's `main`.
     for line in lines.take_while(|line| !line.is_empty()) {
         match calculate(&line) {
             // `Display` for `f64` prints the shortest text that reads back to the

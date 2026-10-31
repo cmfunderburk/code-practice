@@ -1,10 +1,15 @@
 # Adventure Rooms — SPEC
 
-The adventure every implementation plays, in any language. The Python version
-(`python/problem.md`) adds the API and the design. Each implementation is its
-language's natural program: how it describes a room, how it words a refusal, and
-how it reads a line are its own. The **world** (§1) and the **rules** (§3) are
-not, and §5 fixes the few output facts all of them share.
+This document specifies a small text adventure: five rooms, a few items, and a
+player who walks between the rooms, picks items up, and puts them down. There are
+three versions of it, in Python, C, and Rust, and each is written the way a
+programmer in that language would usually write it. All three must agree on the
+**world** (§1) and on what each command does (§3). They may differ in how they
+describe a room, how they word a refusal, and how they read a line.
+
+The Python version's API is in `python/problem.md`. Each version has its own tests,
+and all three also run the shared tests in `test_program.py`, which check only
+the facts in §5.
 
 ## 1. The world
 
@@ -28,8 +33,9 @@ The program is used at a terminal, one command per line, on stdin and stdout.
 When the session starts it describes the hall. A line is a **verb** and an
 optional **argument**, split at the first space after surrounding spaces are
 removed; spaces around the argument are removed too, so `  go   north ` is `go`
-with `north`. Which other whitespace is trimmed, and whether `LOOK` or `go North`
-is understood, is the implementation's choice.
+with `north`. Each version decides for itself which other whitespace it removes
+(tabs, carriage returns, no-break spaces) and whether it understands `LOOK` or
+`go North`.
 
 The session ends after `quit`, or at end of input. Lines after `quit` are not read.
 The exit status is 0 whenever input is well formed UTF-8 text.
@@ -53,10 +59,11 @@ argument or toward a direction with no exit, `take` of an item not in the room,
 `drop` of an item not carried, `take` or `drop` with no argument, and any other
 verb, an empty line included.
 
-## 4. A session (one implementation)
+## 4. A sample session (the Python version)
 
-The Python version's shell prints this; other implementations may describe rooms, and word
-their answers, their own way.
+The Python version prints this. The C and Rust versions happen to print the same
+words, but SPEC does not require it: a version may describe rooms and word its
+answers its own way, as long as it keeps the facts in §5.
 
 ```
 You are in a dusty entrance hall.
@@ -81,15 +88,15 @@ Goodbye.
 (`> ` marks the user's lines, which a terminal echoes; the program prints no
 prompt.)
 
-## 5. Fixed output
+## 5. What the shared tests check
 
-These are the only output facts every implementation keeps fixed; all other
-wording is each implementation's own:
-- End of input ends the session without another word, so the answer to a line is
-  whatever the session prints past the lines before it.
-- A description names its room (`hall`, `library`, `cellar`, `attic`, `garden`) as
-  a word, and no other room. It names every item the room holds.
+These are the only facts about the output that every version must share:
+- At end of input the program stops without printing anything more. So the
+  answer to a line is whatever the session prints after the output of the lines
+  before it.
+- A description names its room (`hall`, `library`, `cellar`, `attic`, `garden`)
+  as a word, and no other room. It names every item the room holds.
 - An `inventory` answer names every item carried and no other item.
-- Only a description names a room, unless the line itself named one (Python's
-  `take hall` answers `There is no hall here.`).
+- Only a description names a room, unless the line itself named one (the Python
+  version answers `take hall` with `There is no hall here.`).
 - Every line up to and including `quit` is answered with at least one line.

@@ -3,33 +3,33 @@ title = "Tic-Tac-Toe"
 [[section]]
 name = "board"
 symbols = ["EMPTY_BOARD", "_LINES"]
-cue = "The empty board as nine empty strings, and the eight winning lines as index triples: rows, then columns, then the two diagonals."
+cue = "The starting board, nine empty strings, and the eight winning lines as triples of cell numbers: the three rows, then the three columns, then the two diagonals."
 
 [[section]]
 symbols = ["to_move"]
-cue = "Derived view: X when the two marks are equal in number, otherwise O."
+cue = "Whose turn: X when the board holds as many X marks as O marks, otherwise O."
 
 [[section]]
 symbols = ["winner"]
-cue = "Derived view: the mark filling any winning line, or None."
+cue = "The mark that fills any of the eight lines in _LINES, or None if no line is filled."
 
 [[section]]
 symbols = ["is_draw"]
-cue = "Derived view: no winner and no empty cell."
+cue = "True when nobody has won and no cell is empty."
 
 [[section]]
 symbols = ["legal_moves"]
-cue = "Derived view: no moves once someone has won; otherwise the indices of the empty cells."
+cue = "The cells that may be played: none once someone has won, otherwise the numbers of the empty cells."
 
 [[section]]
 symbols = ["play"]
-cue = "Transition: a position not among the legal moves is a ValueError (illegal move: pos); otherwise a new board with the mover's mark there."
+cue = "Make a move: raise ValueError(\"illegal move: pos\") if pos is not among the legal moves; otherwise return a new board with the mark of the player to move in that cell, leaving the old board unchanged."
 
 [[section]]
 symbols = ["_render"]
-cue = "View: three rows of cells joined by spaces, . for empty, rows joined by newlines."
+cue = "The board as text: three rows, each with its cells separated by spaces and . for an empty cell, the rows joined by newlines."
 
 [[section]]
 name = "main"
 symbols = ["main", "__main__"]
-cue = "Composition root: from the empty board, while no winner and no draw: print the board and who is to move, read a line with input(); end of input prints game abandoned and returns; a line int() can't read asks for a cell; print the core's ValueError (a marked or off-board cell), else thread the new board. Finally the board and X wins! / O wins! or draw. Then the module guard."
+cue = "The game loop: start from EMPTY_BOARD and repeat while nobody has won and the game is not a draw. Print the rendered board and \"X to move\" or \"O to move\", then read a line with input(); at end of input print \"game abandoned\" and return. If int() can't read the line, print \"a cell 0-8, please\". Otherwise pass the number to play: if it raises ValueError (a marked cell, or one off the board), print the message; if not, keep the new board. At the end, print the final board and then \"X wins!\", \"O wins!\", or \"draw\". Then the if __name__ == \"__main__\" guard."

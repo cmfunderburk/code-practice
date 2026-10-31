@@ -16,7 +16,7 @@
 //    [approach]
 // 5. Python raises `ValueError` for an illegal move. C returns `false`, leaves
 //    `*next` unwritten, and `main` prints the message. [errors]
-// 6. Python's shell reads a move with `int(line)` and lets `play` reject a
+// 6. Python's `main` reads a move with `int(line)` and lets `play` reject a
 //    number off the board. C's `strtol` is the parser here: it reports where it
 //    stopped, so a line with anything after the number is caught, and `cell_of`
 //    rejects a number outside 0-8 before it is narrowed to an `int`. [parsing]

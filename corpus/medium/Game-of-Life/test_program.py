@@ -1,11 +1,13 @@
-"""Game of Life smoke suite: each language, run whole on stdin (SPEC §5).
+"""Game of Life shared tests: each version run as a whole program (SPEC §5).
 
-The tests use only the `run_program` fixture (`corpus/conftest.py`), which runs the
-program, in each language, on the given stdin and returns its stdout (asserting exit
-status 0). Each implementation labels a frame its own way, so a label line is read
-only for its first number, the generation; grid lines are compared exactly. Expected
-grids come from a definition-level recount of every cell, never from an
-implementation under test.
+The Python, C, and Rust versions all run these tests. They use only the
+`run_program` fixture (`corpus/conftest.py`), which runs the program in each
+language with the given stdin, checks that it exits with status 0, and returns its
+stdout. The versions may label a generation differently, so a label line is
+checked only for its first number, which must be the generation; grid lines are
+compared exactly. Expected grids come from `_recount_step`, which visits every
+cell and counts its live neighbors directly; no code under test is used to compute
+an expected answer.
 """
 
 import random
@@ -29,7 +31,7 @@ _BLINKER_FRAMES = [
 ]
 
 
-def _oracle_step(grid: list[str]) -> list[str]:
+def _recount_step(grid: list[str]) -> list[str]:
     rows, cols = len(grid), len(grid[0])
 
     def alive(r: int, c: int) -> bool:
@@ -55,7 +57,7 @@ def _expected(grid: list[str], generations: int) -> list[list[str]]:
     frames = []
     for _ in range(generations + 1):
         frames.append(grid)
-        grid = _oracle_step(grid)
+        grid = _recount_step(grid)
     return frames
 
 
@@ -81,7 +83,7 @@ def _assert_error(out: str) -> None:
     assert re.search(r"\berror\b", lines[0], re.IGNORECASE), out
 
 
-def test_spec_example_blinker(run_program):
+def test_spec_sample_session(run_program):
     assert _frames(run_program(_BLINKER), 5, 3) == _BLINKER_FRAMES
 
 
@@ -108,7 +110,7 @@ def test_final_newline_is_optional(run_program):
     assert _frames(run_program(_BLINKER.rstrip("\n")), 5, 3) == _BLINKER_FRAMES
 
 
-def test_still_life_over_the_generation_limit(run_program):
+def test_still_life_for_the_maximum_1000_generations(run_program):
     _simulates(run_program, ["....", ".##.", ".##.", "...."], 1000)
 
 
@@ -118,7 +120,7 @@ def test_largest_board(run_program):
                ["".join(rng.choice("#..") for _ in range(100)) for _ in range(100)], 3)
 
 
-def test_random_boards_match_the_definition(run_program):
+def test_random_boards_match_a_cell_by_cell_recount(run_program):
     rng = random.Random(2026)
     for _ in range(8):
         rows, cols = rng.randint(1, 12), rng.randint(1, 12)

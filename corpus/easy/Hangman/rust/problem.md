@@ -7,7 +7,8 @@ of 6 wrong guesses: the game is won when every letter of the secret is guessed,
 and lost on the sixth miss.
 
 Playing:
-- Pick the word with the language's ordinary random source.
+- Pick the word with the random number source a programmer in the language
+  would usually use.
 - Before each guess show the secret with unguessed letters hidden, and the
   misses used out of 6.
 - A guess is one letter; uppercase counts as lowercase. Answer any other line

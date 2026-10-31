@@ -5,6 +5,9 @@ The programs the app drills. `scripts/build_bundle.py` reads this directory and 
 restart the server (or run `bun run bundle`) after changing anything here. Set
 `CODE_PRACTICE_CORPUS` to build from a corpus somewhere else.
 
+The documents and cues are written for a reader who has read the spec and studied the code,
+and nothing else. [`WRITING.md`](WRITING.md) has the rules.
+
 ## Layout
 
 ```
@@ -73,7 +76,7 @@ cue = "What the program needs: a random source to pick the word, ..."
 [[section]]
 name = "main"                # optional; the default joins the symbols with " + "
 symbols = ["main", "__main__"]
-cue = "Composition root: ..."
+cue = "The program's loop: ..."
 ```
 
 - The symbols must be exactly the file's top-level units, in order. The build fails and shows
@@ -108,11 +111,13 @@ Links show only their text, because the app has nothing to open.
   output, and a sample session. Its fixed-output section names the only output facts every
   implementation keeps. Everything else is each implementation's own wording.
 - **`python/problem.md`** gives the Python API (signatures, types, what raises) and how
-  `main()` runs the program. **`python/notes.md`** gives the intuition, complexity, the shapes
-  chosen and rejected, and what the design grows into at scale.
-- **`DEFENSE.md`** holds questions to answer aloud, grouped as lifecycle, trade-offs,
-  adversarial, scale and across languages, each with a folded answer that cites `SPEC.md`, the
-  notes or the code. It opens with a committee prompt for rehearsing the questions with an LLM.
+  `main()` runs the program. **`python/notes.md`** explains how it works, what `main` does,
+  the design choices and the alternatives they were chosen over, and where the idea shows up
+  again in larger programs.
+- **`DEFENSE.md`** holds questions to answer aloud: following input through the program,
+  design choices, unusual input, beyond this program, and across languages. Each has a folded
+  answer that cites `SPEC.md`, the notes or the code. It opens with an examiner prompt for
+  rehearsing the questions with an LLM.
 - **A port's `problem.md`** gives its contract (types and signatures in that language) and how
   it differs from the Python version. **Its `notes.md`** gives the language-specific moves.
   **`annotated_solution.*`** must be `solution.*` with comment lines added and nothing else

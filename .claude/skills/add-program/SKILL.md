@@ -5,8 +5,10 @@ description: Add a new program to this repo's corpus (corpus/<tier>/<Program>/),
 
 # Add a program to the corpus
 
-The format is defined in `corpus/README.md`. Read it first, and read one existing program
-end to end before you write anything. `corpus/easy/Hangman` is the smallest. Read
+The format is defined in `corpus/README.md`, and the writing rules in `corpus/WRITING.md`:
+every document, cue, comment, and test name is written for a reader who has read the spec and
+studied the code, and nothing else. Read both first, and read one existing program end to end
+before you write anything. `corpus/easy/Hangman` is the smallest. Read
 `corpus/medium/Editor-Buffer` too if the new program has classes. The bar is set by those
 programs, not by this skill.
 
@@ -38,7 +40,8 @@ text, word lists or messages.
 - a **fixed output** section naming the only output facts every implementation must keep.
   Everything else is each implementation's own wording.
 
-Write it in the voice of the existing specs: short sections, exact rules, and no API.
+Write it in the voice of the existing specs: short sections, exact rules, and no API. Define
+any term the rules use (a pattern name, a game term) where it first appears.
 
 ## 3. Write the Python implementation
 
@@ -55,19 +58,20 @@ Then write `python/sections.toml`:
 
 - List every top-level unit in order. Group units only when they are recalled together, such as
   `main` and `__main__`.
-- Write one cue per section, in the existing style. Start with the unit's role ("Derived view:",
-  "Transition:", "Composition root:"), then give the facts needed to write the code without
-  dictating it: names, messages and edge cases.
+- Write one cue per section. Say what the unit does in plain words, then give the facts needed
+  to write the code without dictating it: names, exact messages and edge cases. Don't open with
+  a role label ("Derived view:", "Composition root:"); see `corpus/WRITING.md` rule 10.
 
 Then write `python/problem.md` and `python/notes.md`, following Hangman's. `problem.md` gives the
-rules in brief, examples, the API with signatures, and what `main()` does. `notes.md` covers:
+rules in brief, examples, the API with signatures, and what `main()` does. `notes.md` has these
+sections:
 
-- **Intuition**;
-- **Complexity**;
-- **Discussed, not drilled**;
-- **Shapes chosen and rejected**, where each bullet is a design alternative and why it lost,
+- **How it works**: the idea, a worked check, and the complexity;
+- **`main`**: what the program's loop does with each line or turn;
+- **Design choices**, where each bullet is a design alternative and why this one was chosen,
   written in the present tense;
-- **Scales up to**: the larger kind of system this idea grows into.
+- **Where this shows up again**: larger kinds of program that use the same idea, described so
+  that a reader who has never seen them can follow.
 
 ## 4. Write the ports
 
@@ -94,11 +98,13 @@ complexity. The first line is `Python source: \`python/solution.py\``.
 
 It needs everything above. Copy the structure of an existing `DEFENSE.md`:
 
-- the intro and the committee prompt, with this program's attachment paths;
-- questions grouped as **Lifecycle** (trace an input through the code), **Trade-offs** (why this
-  shape over the rejected ones), **Adversarial** (bad input, end of input, edge cases),
-  **Scale** (what the idea grows into) and **Across languages** (how the ports meet the same
-  design);
+- the intro and the examiner prompt, with this program's attachment paths;
+- questions grouped as **Following input through the program** (trace inputs through the
+  code), **Design choices** (why this shape over an alternative), **Unusual input** (bad input,
+  end of input, edge cases), **Beyond this program** (where the idea shows up again) and
+  **Across languages** (how the Python, Rust and C versions meet the same design);
+- each question as a `###` heading, then body text that sets up what the reader needs (the
+  functions, inputs, or alternatives involved) and asks one specific thing;
 - each question followed by a folded `> [!answer]-` callout. The callout leads with the decisive
   point and cites `SPEC.md`, the notes or the code by section.
 
